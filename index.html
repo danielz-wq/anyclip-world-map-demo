@@ -94,6 +94,7 @@
       padding: 8px 10px 6px;
       border-bottom: 1px solid #223246;
       background:#0f151f;
+      cursor: move;
     }
     .player-title {
       font-size: 13px; font-weight:600;
@@ -458,6 +459,55 @@
       toggle.textContent = collapsed ? '▸' : '▾';
     });
 
+    // --- Make panels draggable ---
+function makeDraggable(el, handle) {
+  let isDown = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  handle.style.cursor = handle.style.cursor || 'move';
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isDown = true;
+
+    const rect = el.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+
+    // switch to left/top control (so right/bottom won't fight us)
+    el.style.right = 'auto';
+    el.style.bottom = 'auto';
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
+
+  function onMouseMove(e) {
+    if (!isDown) return;
+    el.style.left = (e.clientX - offsetX) + 'px';
+    el.style.top  = (e.clientY - offsetY) + 'px';
+  }
+
+  function onMouseUp() {
+    isDown = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+}
+
+// apply draggable behavior
+const filtersPanel = document.getElementById('filters');
+const playerPanelEl = document.getElementById('playerPanel');
+const playerHeaderEl = playerPanelEl.querySelector('.player-header');
+
+// drag the filters by grabbing anywhere on the panel
+makeDraggable(filtersPanel, filtersPanel);
+
+// drag the player by grabbing the header bar
+makeDraggable(playerPanelEl, playerHeaderEl);
+
+    
     // Initial render
     applyFilters();
   </script>
