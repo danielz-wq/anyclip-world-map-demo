@@ -184,6 +184,14 @@
         <div class="chip" data-value="Middle East">Middle East</div>
       </div>
     </div>
+	<div class="row group">
+	  <div class="label">AnyClip Live Events</div>
+	  <div class="chips" id="liveEvents">
+		<div class="chip" data-value="past">Past</div>
+		<div class="chip" data-value="current">Current</div>
+		<div class="chip" data-value="future">Future</div>
+	  </div>
+	</div>
 
     <div class="meta">
       <div id="count">0 results</div>
@@ -323,6 +331,40 @@
         lat:25.2048, lng:55.2708,
         videoId:'3C3lvtqjbwo'
       }
+	   // AnyClip Live Events – examples
+	  {
+		id: 'E1',
+		title: 'AnyClip Live Summit 2024 – Keynote Replay',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'US',
+		region: 'Americas',
+		lat: 40.7580, lng: -73.9855, // NYC-ish
+		videoId: 'REPLACE_PAST_EVENT_VIDEO_ID',  // <-- put your real YT ID
+		eventPhase: 'past'
+	  },
+	  {
+		id: 'E2',
+		title: 'AnyClip Live Product Demo – Streaming Now',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'GB',
+		region: 'Europe',
+		lat: 51.5072, lng: -0.1276, // London
+		videoId: 'REPLACE_CURRENT_EVENT_VIDEO_ID', // <-- put your real YT ID
+		eventPhase: 'current'
+	  },
+	  {
+		id: 'E3',
+		title: 'AnyClip Future Launch – Coming Soon',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'IL',
+		region: 'Middle East',
+		lat: 32.0853, lng: 34.7818, // Tel Aviv
+		videoId: null,             // no video yet
+		eventPhase: 'future'
+	  }
     ];
 
     // --- State ---
@@ -331,7 +373,8 @@
       q: '',
       sources: new Set(),
       topics: new Set(),
-      regions: new Set()
+      regions: new Set(),
+	  livePhase: null   // 'past' | 'current' | 'future' | null
     };
 
     // --- Player elements ---
@@ -353,14 +396,32 @@
     }
 
     function setCurrentVideo(v) {
-      if (!v || !v.videoId) return;
-      const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
-      ytFrame.src = embedUrl;
-      playerTitle.textContent = v.title;
-      playerMeta.textContent  = `${v.source} • ${v.topic} • ${v.region}`;
-      playerPlaceholder.style.display = 'none';
-      playerFrameWrap.style.display   = 'block';
-    }
+	  if (!v) return;
+
+	  // meta text includes live phase if present
+	  const phaseLabel = v.eventPhase
+		? ` • ${v.eventPhase.toUpperCase()} event`
+		: '';
+	  playerTitle.textContent = v.title;
+	  playerMeta.textContent  = `${v.source} • ${v.topic} • ${v.region}${phaseLabel}`;
+
+	  // Future event or no videoId – show “coming soon” panel instead of player
+	  if (v.eventPhase === 'future' || !v.videoId) {
+		ytFrame.src = '';
+		playerFrameWrap.style.display   = 'none';
+		playerPlaceholder.style.display = 'flex';
+		playerPlaceholder.textContent   =
+		  'This is a planned AnyClip Live Event.\nStay tuned for more details.';
+		return;
+	  }
+
+	  // Past / current events – play YouTube
+	  const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
+	  ytFrame.src = embedUrl;
+	  playerPlaceholder.style.display = 'none';
+	  playerFrameWrap.style.display   = 'block';
+	}
+
 
     playerClose.addEventListener('click', () => {
       ytFrame.src = '';
@@ -394,27 +455,33 @@
     }
 
     function applyFilters() {
-      const q = state.q.trim().toLowerCase();
-      const hasSource = state.sources.size > 0;
-      const hasTopic  = state.topics.size > 0;
-      const hasRegion = state.regions.size > 0;
+	  const q = state.q.trim().toLowerCase();
+	  const hasSource   = state.sources.size > 0;
+	  const hasTopic    = state.topics.size > 0;
+	  const hasRegion   = state.regions.size > 0;
+	  const hasLivePhase = !!state.livePhase;
 
-      const filtered = demoVideos.filter(v => {
-        const matchesQ = !q || v.title.toLowerCase().includes(q);
-        const matchesSource = !hasSource || state.sources.has(v.source);
-        const matchesTopic  = !hasTopic  || state.topics.has(v.topic);
-        const matchesRegion = !hasRegion || state.regions.has(v.region);
-        return matchesQ && matchesSource && matchesTopic && matchesRegion;
-      });
+	  const filtered = demoVideos.filter(v => {
+		const matchesQ       = !q || v.title.toLowerCase().includes(q);
+		const matchesSource  = !hasSource   || state.sources.has(v.source);
+		const matchesTopic   = !hasTopic    || state.topics.has(v.topic);
+		const matchesRegion  = !hasRegion   || state.regions.has(v.region);
+		const matchesLive    = !hasLivePhase || v.eventPhase === state.livePhase;
 
-      const af = [];
-      if (hasSource) af.push([...state.sources].join(', '));
-      if (hasTopic)  af.push([...state.topics].join(', '));
-      if (hasRegion) af.push([...state.regions].join(', '));
-      $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
+		return matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
+	  });
 
-      renderMarkers(filtered);
-    }
+	  const af = [];
+	  if (hasSource)   af.push([...state.sources].join(', '));
+	  if (hasTopic)    af.push([...state.topics].join(', '));
+	  if (hasRegion)   af.push([...state.regions].join(', '));
+	  if (hasLivePhase) af.push(`Live: ${state.livePhase}`);
+
+	  $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
+
+	  renderMarkers(filtered);
+	}
+
 
     function wireChips(containerId, targetSet) {
       $$('#' + containerId + ' .chip').forEach(chip => {
@@ -436,6 +503,27 @@
     wireChips('sources', state.sources);
     wireChips('topics', state.topics);
     wireChips('regions', state.regions);
+	
+	// Live Events chips – single selection (Past / Current / Future)
+	const liveChips = $$('#liveEvents .chip');
+	liveChips.forEach(chip => {
+	  chip.addEventListener('click', () => {
+		const val = chip.getAttribute('data-value');
+
+		if (state.livePhase === val) {
+		  // clicking the same one again clears the filter
+		  state.livePhase = null;
+		  chip.classList.remove('active');
+		} else {
+		  state.livePhase = val;
+		  // make it single-select
+		  liveChips.forEach(c => c.classList.remove('active'));
+		  chip.classList.add('active');
+		}
+
+		applyFilters();
+	  });
+	});
 
     $('#search').addEventListener('input', (e) => {
       state.q = e.target.value || '';
