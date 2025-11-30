@@ -195,7 +195,7 @@
       justify-content: center;
       gap: 24px;
       margin: 0 auto 24px;
-      margin-top: -8px; /* מרים אותם קצת קרוב למפה */
+      margin-top: -8px;
     }
 
     .banner-slot {
@@ -232,7 +232,6 @@
       line-height: 1.4;
     }
 
-    /* במסכים צרים – באנר אחד בכל שורה */
     @media (max-width: 900px) {
       .banner-row {
         flex-direction: column;
@@ -259,24 +258,28 @@
       color: #f9fafb;
     }
 
-    /* --- Ranking panel --- */
+    /* --- Ranking panel: dark, under filters --- */
     .ranking-panel {
-      width: 80%;
-      max-width: 900px;
-      margin: 0 auto 16px;
-      background: #ffffff;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 8px 20px rgba(15,23,42,0.12);
-      padding: 10px 16px;
-      font-size: 13px;
-      color: #111827;
+      position: fixed;
+      left: 16px;
+      top: 280px; /* adjust if needed */
+      width: 320px;
+      max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text);
+      z-index: 950;
     }
 
     .ranking-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
+      color: var(--text);
     }
 
     #rankingList {
@@ -286,15 +289,24 @@
 
     #rankingList li {
       margin: 2px 0;
+      color: var(--muted);
     }
 
     #rankingList span.score {
       font-weight: 600;
-      color: #2563eb;
+      color: var(--accent);
     }
 
     #rankingList span.meta {
-      color: #6b7280;
+      color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .ranking-panel {
+        left: 16px;
+        right: 16px;
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -320,12 +332,6 @@
     </div>
   </div>
 
-  <!-- Popularity Ranking Panel -->
-  <div class="ranking-panel" id="rankingPanel">
-    <div class="ranking-title">Top Videos in Current View</div>
-    <ol id="rankingList"></ol>
-  </div>
-
   <!-- Floating Filters -->
   <div class="filters" id="filters">
     <button class="toggle" id="toggle" title="Collapse/Expand">▾</button>
@@ -349,6 +355,7 @@
         Filter by region, topic, publisher, and AnyClip Live Events.
       </div>
     </div>
+
     <h2>Filters</h2>
 
     <div class="row">
@@ -407,6 +414,12 @@
     </div>
   </div>
 
+  <!-- Ranking panel under filters -->
+  <div class="ranking-panel" id="rankingPanel">
+    <div class="ranking-title">Top Videos in Current View</div>
+    <ol id="rankingList"></ol>
+  </div>
+
   <!-- Player panel -->
   <div class="player-panel" id="playerPanel">
     <div class="player-header">
@@ -447,12 +460,12 @@
     const map = L.map('map', {
       zoomControl: true,
       maxBounds: worldBounds,
-      maxBoundsViscosity: 1.0  // "sticky" at the edges
+      maxBoundsViscosity: 1.0
     }).setView([20, 0], 2);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 7,
-      noWrap: true,                       // prevents duplicate worlds
+      noWrap: true,
       bounds: worldBounds,
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
@@ -609,7 +622,7 @@
 
       const points = list
         .filter(v => typeof v.engagementScore === 'number')
-        .map(v => [v.lat, v.lng, v.engagementScore / 100]); // intensity 0–1
+        .map(v => [v.lat, v.lng, v.engagementScore / 100]);
 
       if (heatLayer) {
         map.removeLayer(heatLayer);
@@ -649,6 +662,17 @@
           `<span class="score">${v.engagementScore}</span>` +
           ` – ${escapeHtml(v.title)} ` +
           `<span class="meta">(${escapeHtml(v.region)} • ${escapeHtml(v.source)})</span>`;
+
+        li.style.cursor = 'pointer';
+
+        li.addEventListener('click', () => {
+          setCurrentVideo(v);
+
+          if (typeof v.lat === 'number' && typeof v.lng === 'number') {
+            map.setView([v.lat, v.lng], Math.max(map.getZoom(), 4));
+          }
+        });
+
         rankingList.appendChild(li);
       });
     }
@@ -810,9 +834,13 @@
     const filtersPanel = document.getElementById('filters');
     const playerPanelEl = document.getElementById('playerPanel');
     const playerHeaderEl = playerPanelEl.querySelector('.player-header');
+    const rankingPanelEl = document.getElementById('rankingPanel');
 
     makeDraggable(filtersPanel, filtersPanel);
     makeDraggable(playerPanelEl, playerHeaderEl);
+    if (rankingPanelEl) {
+      makeDraggable(rankingPanelEl, rankingPanelEl);
+    }
 
     // --- Load videos from external JSON and then render ---
     fetch('videos.json')
@@ -823,7 +851,6 @@
         return response.json();
       })
       .then(data => {
-        // Add engagementScore if missing (40–99) – deterministic from id
         demoVideos = data.map(v => {
           if (typeof v.engagementScore === 'number') return v;
           const digits = String(v.id || '')
@@ -835,7 +862,7 @@
           return { ...v, engagementScore: score };
         });
 
-        applyFilters();  // now that data is loaded, render markers + heatmap + ranking
+        applyFilters();
       })
       .catch(err => {
         console.error(err);
