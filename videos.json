@@ -1,1 +1,264 @@
+ [
+    
+      {
+        id:'1',
+        title:'NYC Street Food Rising',
+        source:'YNET',
+        topic:'Food',
+        country:'US',
+        region:'Americas',
+        lat:40.7128, lng:-74.0060,
+        videoId:'eB0EycZScNY'
+      },
+      {
+        id:'2',
+        title:'Silicon Valley AI Summit Highlights',
+        source:'CNN',
+        topic:'Tech',
+        country:'US',
+        region:'Americas',
+        lat:37.3875, lng:-122.0575,
+        videoId:'VDzIJ4yg1b4'
+      },
+      {
+        id:'3',
+        title:'Brazil Football Fever',
+        source:'REUTERS',
+        topic:'Sports',
+        country:'BR',
+        region:'Americas',
+        lat:-23.5505, lng:-46.6333,
+        videoId:'0C0PjkMyEss'
+      },
+		
+		
 
+{
+  id: '10',
+  title: 'LA under curfew after days of protests',
+  source: 'BBC',
+  topic: 'News',
+  country: 'US',
+  region: 'Americas',
+  lat: 34.0522, lng: -118.2437,   
+  videoId: 'oHPaG_CWors'         
+},
+
+
+{
+  id: '11',
+  title: 'Hurricane Milton makes landfall in Florida',
+  source: 'CNN',
+  topic: 'News',
+  country: 'US',
+  region: 'Americas',
+  lat: 27.2670, lng: -82.5453,    
+  videoId: 'eGDWDw5-D2E'          
+},
+
+
+{
+  id: '12',
+  title: 'National Hurricane Center update from Miami',
+  source: 'NOAA',
+  topic: 'News',
+  country: 'US',
+  region: 'Americas',
+  lat: 25.7617, lng: -80.1918,   
+  videoId: 'gto2ao7zxgg'         
+},
+
+
+{
+  id: '13',
+  title: 'Rio de Janeiro city memo – Reuters',
+  source: 'REUTERS',
+  topic: 'Culture',
+  country: 'BR',
+  region: 'Americas',
+  lat: -22.9068, lng: -43.1729,  
+  videoId: 'HJPFDqBB8KQ'          
+},
+
+
+{
+  id: '14',
+  title: 'Rio prepares to welcome New Year',
+  source: 'REUTERS',
+  topic: 'Culture',
+  country: 'BR',
+  region: 'Americas',
+  lat: -22.9068, lng: -43.1729,
+  videoId: '46TcbpZ9hcE'          
+},
+
+
+{
+  id: '15',
+  title: 'Discover Rio de Janeiro – travel highlights',
+  source: 'TRAVEL',
+  topic: 'Culture',
+  country: 'BR',
+  region: 'Americas',
+  lat: -22.9068, lng: -43.1729,
+  videoId: 'RmLnXE5iv_s'          
+},
+
+		
+		
+		
+      
+      {
+        id:'4',
+        title:'London Elections Night',
+        source:'BBC',
+        topic:'News',
+        country:'GB',
+        region:'Europe',
+        lat:51.5072, lng:-0.1276,
+        videoId:'GKB6HrLWL70'
+      },
+      {
+        id:'5',
+        title:'Paris Tech Week Highlights',
+        source:'REUTERS',
+        topic:'Tech',
+        country:'FR',
+        region:'Europe',
+        lat:48.8566, lng:2.3522,
+        videoId:'GKB6HrLWL70' 
+      },
+		{
+  id: '20',
+  title: '50 Amazing European Destinations – 4K Travel Guide',
+  source: 'TouristicTours',
+  topic: 'Travel',
+  country: 'FR',   
+  region: 'Europe',
+  lat: 48.8566, lng: 2.3522, 
+  videoId: '5DTqYk7gdMU'       
+},
+
+
+{
+  id: '21',
+  title: '50 Best Places to Visit in Europe – Travel Guide',
+  source: 'Touropia',
+  topic: 'Travel',
+  country: 'IT',   
+  region: 'Europe',
+  lat: 41.9028, lng: 12.4964,  
+  videoId: 'O4PmcP9ecE4'       
+},
+		
+
+      
+      {
+        id:'6',
+        title:'Tokyo Nightlife Pulse',
+        source:'CNN',
+        topic:'Culture',
+        country:'JP',
+        region:'Asia',
+        lat:35.6895, lng:139.6917,
+        videoId:'DBkz3q2PhF0'
+      },
+      {
+        id:'7',
+        title:'Seoul Esports Finals',
+        source:'BBC',
+        topic:'Sports',
+        country:'KR',
+        region:'Asia',
+        lat:37.5665, lng:126.9780,
+        videoId:'Ua7jtqqXGjY'
+      },
+		{
+  id: '30',
+  title: '50 Best Places to Visit in Asia – 4K Travel Video',
+  source: 'Touropia',
+  topic: 'Travel',
+  country: 'IN',  
+  region: 'Asia',
+  lat: 20.5937, lng: 78.9629, 
+  videoId: '9g3lVBXwTqM'       }
+},
+
+{
+  id: '31',
+  title: 'Discover Asia – The Most Amazing Places In Asia',
+  source: 'TravelVideo',
+  topic: 'Travel',
+  country: 'TH',   
+  region: 'Asia',
+  lat: 15.8700, lng: 100.9925,  
+  videoId: 'eq2uBbJrneg'       
+},
+
+   
+      {
+        id:'8',
+        title:'Tel Aviv Startup Pulse',
+        source:'YNET',
+        topic:'Tech',
+        country:'IL',
+        region:'Middle East',
+        lat:32.0853, lng:34.7818,
+        videoId:'YDewrrfN4NY'
+      },
+      {
+        id:'9',
+        title:'Dubai Lifestyle Trends',
+        source:'REUTERS',
+        topic:'Culture',
+        country:'AE',
+        region:'Middle East',
+        lat:25.2048, lng:55.2708,
+        videoId:'3C3lvtqjbwo'
+      },
+		
+{
+  id: '40',
+  title: 'The Best Places in Australia – Travel Video 4K',
+  source: 'GlobalTravel',
+  topic: 'Travel',
+  country: 'AU',
+  region: 'Oceania',
+  lat: -25.2744, lng: 133.7751, 
+  videoId: 'givdeOjNSyY'       
+},
+	   
+	  {
+		id: 'E1',
+		title: 'AnyClip Live Summit 2024 – Keynote Replay',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'US',
+		region: 'Americas',
+		lat: 40.7580, lng: -73.9855, 
+		videoId: 'VjqKog3XwZ8', 
+		eventPhase: 'past'
+	  },
+	  {
+		id: 'E2',
+		title: 'AnyClip Live Product Demo – Streaming Now',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'GB',
+		region: 'Europe',
+		lat: 51.5072, lng: -0.1276, 
+		videoId: 'VaeOaXHfc3M',
+		eventPhase: 'current'
+	  },
+	  {
+		id: 'E3',
+		title: 'AnyClip Future Launch – Coming Soon',
+		source: 'ANYCLIP',
+		topic: 'Live Event',
+		country: 'IL',
+		region: 'Middle East',
+		lat: 32.0853, lng: 34.7818, 
+		videoId: null,             
+		eventPhase: 'future'
+	  }
+    ]
