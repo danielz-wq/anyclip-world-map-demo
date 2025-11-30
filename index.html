@@ -6,32 +6,242 @@
   <title>AnyClip World Map Demo 🌍</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    html, body { margin:0; height:100%; background:#0b0f14; color:white; font-family:system-ui; }
+    :root {
+      --bg:#0b0f14; --panel:#121821; --muted:#9fb0c2; --text:#e6edf3; --accent:#49a0ff;
+      --chip:#192231; --chipOn:#1f2b3d; --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
     #map { height:100%; width:100%; }
+
+    /* Floating filter panel */
+    .filters {
+      position: fixed;
+      top: 16px; left: 16px;
+      width: 320px; max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .filters h2 {
+      margin: 0 0 8px; font-size: 16px; letter-spacing:.2px;
+    }
+    .row { display: grid; gap: 8px; margin: 10px 0; }
+    .row.small { grid-template-columns: 1fr 1fr; }
+    .group { border-top: 1px solid #223246; padding-top: 10px; }
+    .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+    .chips { display:flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      background: var(--chip); border: 1px solid #263243; color: var(--text);
+      padding: 6px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; user-select: none;
+    }
+    .chip.active { background: var(--chipOn); border-color: var(--accent); box-shadow: 0 0 0 1px rgba(73,160,255,.35) inset; }
+    .controls { display:flex; gap:8px; align-items:center; }
+    .search {
+      width:100%; background: #0e141c; border: 1px solid #223246; border-radius: 10px;
+      color: var(--text); padding: 8px 10px; outline: none; font-size: 13px;
+    }
+    .btn {
+      background: var(--accent); color: #061320; border: none; border-radius: 10px;
+      padding: 8px 10px; font-weight: 600; cursor: pointer;
+    }
+    .meta { display:flex; justify-content: space-between; align-items:center; font-size:12px; color: var(--muted); margin-top: 6px; }
+    .toggle {
+      position:absolute; top: -12px; right: -12px; background:#0e141c; border:1px solid #223246; color:var(--text);
+      width: 32px; height:32px; border-radius: 999px; cursor:pointer; display:grid; place-items:center; box-shadow:var(--shadow);
+    }
+    .collapsed { height: 46px; overflow: hidden; padding-bottom: 8px; }
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background:#0e141c; color:var(--text); border:1px solid #2a384b; }
+    a.link { color: var(--accent); text-decoration: none; }
   </style>
 </head>
 <body>
   <div id="map"></div>
 
+  <!-- Floating Filters -->
+  <div class="filters" id="filters">
+    <button class="toggle" id="toggle" title="Collapse/Expand">▾</button>
+    <h2>Filters</h2>
+
+    <div class="row">
+      <div class="controls">
+        <input id="search" class="search" placeholder="Search title… (e.g. Tokyo, marathon, BBC)" />
+        <button class="btn" id="reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Source</div>
+      <div class="chips" id="sources">
+        <div class="chip" data-value="BBC">BBC</div>
+        <div class="chip" data-value="CNN">CNN</div>
+        <div class="chip" data-value="YNET">YNET</div>
+        <div class="chip" data-value="REUTERS">Reuters</div>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Topic</div>
+      <div class="chips" id="topics">
+        <div class="chip" data-value="News">News</div>
+        <div class="chip" data-value="Sports">Sports</div>
+        <div class="chip" data-value="Tech">Tech</div>
+        <div class="chip" data-value="Food">Food</div>
+        <div class="chip" data-value="Culture">Culture</div>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Region</div>
+      <div class="chips" id="regions">
+        <div class="chip" data-value="Americas">Americas</div>
+        <div class="chip" data-value="Europe">Europe</div>
+        <div class="chip" data-value="Asia">Asia</div>
+        <div class="chip" data-value="Middle East">Middle East</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div id="count">0 results</div>
+      <div id="activeFilters">No filters</div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const map = L.map('map').setView([20, 0], 2);
-
+    // --- Map init ---
+    const map = L.map('map', { zoomControl: true }).setView([20, 0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 6,
-      attribution: '© OpenStreetMap contributors'
+      maxZoom: 7, attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // דוגמה לנקודות ראשונות
+    // --- Demo data (expandable) ---
     const demoVideos = [
-      { title: 'New York & London Sites & Food', lat: 40.7128, lng: -74.0060 },
-      { title: 'Tokyo Highlights', lat: 35.6895, lng: 139.6917 },
-      { title: 'Tel Aviv Culture', lat: 32.0853, lng: 34.7818 }
+      // Americas
+      { id:'1', title:'NYC Street Food Rising', source:'YNET', topic:'Food', country:'US', region:'Americas', lat:40.7128, lng:-74.0060, url:'#' },
+      { id:'2', title:'Silicon Valley AI Summit', source:'CNN', topic:'Tech', country:'US', region:'Americas', lat:37.3875, lng:-122.0575, url:'#' },
+      { id:'3', title:'Brazil Football Fever', source:'REUTERS', topic:'Sports', country:'BR', region:'Americas', lat:-23.5505, lng:-46.6333, url:'#' },
+
+      // Europe
+      { id:'4', title:'London Elections Night', source:'BBC', topic:'News', country:'GB', region:'Europe', lat:51.5072, lng:-0.1276, url:'#' },
+      { id:'5', title:'Paris Tech Week Highlights', source:'REUTERS', topic:'Tech', country:'FR', region:'Europe', lat:48.8566, lng:2.3522, url:'#' },
+
+      // Asia
+      { id:'6', title:'Tokyo K-Pop Comeback', source:'CNN', topic:'Culture', country:'JP', region:'Asia', lat:35.6895, lng:139.6917, url:'#' },
+      { id:'7', title:'Seoul Esports Finals', source:'BBC', topic:'Sports', country:'KR', region:'Asia', lat:37.5665, lng:126.9780, url:'#' },
+
+      // Middle East
+      { id:'8', title:'Tel Aviv Startup Pulse', source:'YNET', topic:'Tech', country:'IL', region:'Middle East', lat:32.0853, lng:34.7818, url:'#' },
+      { id:'9', title:'Dubai Lifestyle Trends', source:'REUTERS', topic:'Culture', country:'AE', region:'Middle East', lat:25.2048, lng:55.2708, url:'#' }
     ];
 
-    demoVideos.forEach(v => {
-      L.marker([v.lat, v.lng]).addTo(map).bindPopup(`<b>${v.title}</b>`);
+    // --- State ---
+    let markers = [];
+    const state = {
+      q: '',
+      sources: new Set(),
+      topics: new Set(),
+      regions: new Set()
+    };
+
+    // --- Helpers ---
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    function renderMarkers(list) {
+      // clear old
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      list.forEach(v => {
+        const m = L.marker([v.lat, v.lng]).addTo(map)
+          .bindPopup(`
+            <b>${escapeHtml(v.title)}</b><br/>
+            <small>Source: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
+            <a class="link" href="${v.url}" target="_blank" rel="noopener">Open source ↗</a>
+          `);
+        markers.push(m);
+      });
+      $('#count').textContent = `${list.length} result${list.length===1?'':'s'}`;
+    }
+
+    function escapeHtml(s=''){
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[c]));
+    }
+
+    function applyFilters() {
+      const q = state.q.trim().toLowerCase();
+      const hasSource = state.sources.size > 0;
+      const hasTopic  = state.topics.size > 0;
+      const hasRegion = state.regions.size > 0;
+
+      const filtered = demoVideos.filter(v => {
+        const matchesQ = !q || v.title.toLowerCase().includes(q);
+        const matchesSource = !hasSource || state.sources.has(v.source);
+        const matchesTopic  = !hasTopic  || state.topics.has(v.topic);
+        const matchesRegion = !hasRegion || state.regions.has(v.region);
+        return matchesQ && matchesSource && matchesTopic && matchesRegion;
+      });
+
+      // Update active filters label
+      const af = [];
+      if (hasSource) af.push([...state.sources].join(', '));
+      if (hasTopic)  af.push([...state.topics].join(', '));
+      if (hasRegion) af.push([...state.regions].join(', '));
+      $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
+
+      renderMarkers(filtered);
+    }
+
+    function wireChips(containerId, targetSet) {
+      $$('#' + containerId + ' .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.getAttribute('data-value');
+          if (chip.classList.contains('active')) {
+            chip.classList.remove('active');
+            targetSet.delete(val);
+          } else {
+            chip.classList.add('active');
+            targetSet.add(val);
+          }
+          applyFilters();
+        });
+      });
+    }
+
+    // --- UI wiring ---
+    wireChips('sources', state.sources);
+    wireChips('topics', state.topics);
+    wireChips('regions', state.regions);
+
+    $('#search').addEventListener('input', (e) => {
+      state.q = e.target.value || '';
+      applyFilters();
     });
+
+    $('#reset').addEventListener('click', () => {
+      state.q = '';
+      $('#search').value = '';
+      state.sources.clear(); state.topics.clear(); state.regions.clear();
+      $$('.chip.active').forEach(c => c.classList.remove('active'));
+      applyFilters();
+    });
+
+    // collapse/expand
+    const panel = $('#filters');
+    const toggle = $('#toggle');
+    let collapsed = false;
+    toggle.addEventListener('click', () => {
+      collapsed = !collapsed;
+      panel.classList.toggle('collapsed', collapsed);
+      toggle.textContent = collapsed ? '▸' : '▾';
+    });
+
+    // initial render
+    applyFilters();
   </script>
 </body>
 </html>
