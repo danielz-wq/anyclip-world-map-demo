@@ -10,7 +10,11 @@
       --bg:#0b0f14; --panel:#121821; --muted:#9fb0c2; --text:#e6edf3; --accent:#49a0ff;
       --chip:#192231; --chipOn:#1f2b3d; --shadow:0 10px 30px rgba(0,0,0,.35);
     }
-    html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    html, body {
+      margin:0; height:100%;
+      background:var(--bg); color:var(--text);
+      font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
     #map { height:100%; width:100%; }
 
     /* Floating filter panel */
@@ -30,15 +34,21 @@
       margin: 0 0 8px; font-size: 16px; letter-spacing:.2px;
     }
     .row { display: grid; gap: 8px; margin: 10px 0; }
-    .row.small { grid-template-columns: 1fr 1fr; }
     .group { border-top: 1px solid #223246; padding-top: 10px; }
-    .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+    .label {
+      font-size: 12px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px;
+    }
     .chips { display:flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .chip {
       background: var(--chip); border: 1px solid #263243; color: var(--text);
-      padding: 6px 10px; border-radius: 999px; font-size: 12px; cursor: pointer; user-select: none;
+      padding: 6px 10px; border-radius: 999px;
+      font-size: 12px; cursor: pointer; user-select: none;
     }
-    .chip.active { background: var(--chipOn); border-color: var(--accent); box-shadow: 0 0 0 1px rgba(73,160,255,.35) inset; }
+    .chip.active {
+      background: var(--chipOn); border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(73,160,255,.35) inset;
+    }
     .controls { display:flex; gap:8px; align-items:center; }
     .search {
       width:100%; background: #0e141c; border: 1px solid #223246; border-radius: 10px;
@@ -46,16 +56,86 @@
     }
     .btn {
       background: var(--accent); color: #061320; border: none; border-radius: 10px;
-      padding: 8px 10px; font-weight: 600; cursor: pointer;
+      padding: 8px 10px; font-weight: 600; cursor: pointer; font-size: 12px;
     }
-    .meta { display:flex; justify-content: space-between; align-items:center; font-size:12px; color: var(--muted); margin-top: 6px; }
+    .meta {
+      display:flex; justify-content: space-between; align-items:center;
+      font-size:12px; color: var(--muted); margin-top: 6px;
+    }
     .toggle {
-      position:absolute; top: -12px; right: -12px; background:#0e141c; border:1px solid #223246; color:var(--text);
-      width: 32px; height:32px; border-radius: 999px; cursor:pointer; display:grid; place-items:center; box-shadow:var(--shadow);
+      position:absolute; top: -12px; right: -12px;
+      background:#0e141c; border:1px solid #223246; color:var(--text);
+      width: 32px; height:32px; border-radius: 999px;
+      cursor:pointer; display:grid; place-items:center; box-shadow:var(--shadow);
     }
     .collapsed { height: 46px; overflow: hidden; padding-bottom: 8px; }
-    .leaflet-popup-content-wrapper, .leaflet-popup-tip { background:#0e141c; color:var(--text); border:1px solid #2a384b; }
+
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+      background:#0e141c; color:var(--text); border:1px solid #2a384b;
+    }
     a.link { color: var(--accent); text-decoration: none; }
+
+    /* Player panel */
+    .player-panel {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      width: 380px; max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .player-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding: 8px 10px 6px;
+      border-bottom: 1px solid #223246;
+      background:#0f151f;
+    }
+    .player-title {
+      font-size: 13px; font-weight:600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-meta {
+      font-size: 11px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-close {
+      background: transparent; border:none; color:var(--muted);
+      font-size: 18px; cursor:pointer; padding: 0 4px;
+    }
+    .player-body {
+      padding: 8px;
+      background:#05080e;
+    }
+    .player-placeholder {
+      font-size: 12px; color: var(--muted);
+      min-height: 200px;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; padding: 10px;
+      border: 1px dashed #223246; border-radius: 10px;
+    }
+    .player-frame-wrap {
+      display:none;
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #223246;
+    }
+    .player-frame-wrap iframe {
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      border:0;
+    }
+
+    @media (max-width: 768px) {
+      .filters { width:auto; right:16px; }
+      .player-panel { left:16px; right:16px; width:auto; }
+    }
   </style>
 </head>
 <body>
@@ -110,6 +190,31 @@
     </div>
   </div>
 
+  <!-- Player panel -->
+  <div class="player-panel" id="playerPanel">
+    <div class="player-header">
+      <div>
+        <div id="playerTitle" class="player-title">Select a point on the map</div>
+        <div id="playerMeta" class="player-meta">No video playing</div>
+      </div>
+      <button id="playerClose" class="player-close" title="Close">×</button>
+    </div>
+    <div class="player-body">
+      <div id="playerPlaceholder" class="player-placeholder">
+        Click a marker on the map to start playing a video from that region.
+      </div>
+      <div class="player-frame-wrap" id="playerFrameWrap">
+        <iframe
+          id="ytFrame"
+          src=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // --- Map init ---
@@ -118,24 +223,105 @@
       maxZoom: 7, attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // --- Demo data (expandable) ---
+    // --- Demo data (with YouTube videoId) ---
     const demoVideos = [
       // Americas
-      { id:'1', title:'NYC Street Food Rising', source:'YNET', topic:'Food', country:'US', region:'Americas', lat:40.7128, lng:-74.0060, url:'#' },
-      { id:'2', title:'Silicon Valley AI Summit', source:'CNN', topic:'Tech', country:'US', region:'Americas', lat:37.3875, lng:-122.0575, url:'#' },
-      { id:'3', title:'Brazil Football Fever', source:'REUTERS', topic:'Sports', country:'BR', region:'Americas', lat:-23.5505, lng:-46.6333, url:'#' },
+      {
+        id:'1',
+        title:'NYC Street Food Rising',
+        source:'YNET',
+        topic:'Food',
+        country:'US',
+        region:'Americas',
+        lat:40.7128, lng:-74.0060,
+        videoId:'eB0EycZScNY'
+      },
+      {
+        id:'2',
+        title:'Silicon Valley AI Summit Highlights',
+        source:'CNN',
+        topic:'Tech',
+        country:'US',
+        region:'Americas',
+        lat:37.3875, lng:-122.0575,
+        videoId:'VDzIJ4yg1b4'
+      },
+      {
+        id:'3',
+        title:'Brazil Football Fever',
+        source:'REUTERS',
+        topic:'Sports',
+        country:'BR',
+        region:'Americas',
+        lat:-23.5505, lng:-46.6333,
+        videoId:'0C0PjkMyEss'
+      },
 
       // Europe
-      { id:'4', title:'London Elections Night', source:'BBC', topic:'News', country:'GB', region:'Europe', lat:51.5072, lng:-0.1276, url:'#' },
-      { id:'5', title:'Paris Tech Week Highlights', source:'REUTERS', topic:'Tech', country:'FR', region:'Europe', lat:48.8566, lng:2.3522, url:'#' },
+      {
+        id:'4',
+        title:'London Elections Night',
+        source:'BBC',
+        topic:'News',
+        country:'GB',
+        region:'Europe',
+        lat:51.5072, lng:-0.1276,
+        videoId:'GKB6HrLWL70'
+      },
+      {
+        id:'5',
+        title:'Paris Tech Week Highlights',
+        source:'REUTERS',
+        topic:'Tech',
+        country:'FR',
+        region:'Europe',
+        lat:48.8566, lng:2.3522,
+        videoId:'GKB6HrLWL70' // example: reuse or change if you want another video
+      },
 
       // Asia
-      { id:'6', title:'Tokyo K-Pop Comeback', source:'CNN', topic:'Culture', country:'JP', region:'Asia', lat:35.6895, lng:139.6917, url:'#' },
-      { id:'7', title:'Seoul Esports Finals', source:'BBC', topic:'Sports', country:'KR', region:'Asia', lat:37.5665, lng:126.9780, url:'#' },
+      {
+        id:'6',
+        title:'Tokyo Nightlife Pulse',
+        source:'CNN',
+        topic:'Culture',
+        country:'JP',
+        region:'Asia',
+        lat:35.6895, lng:139.6917,
+        videoId:'DBkz3q2PhF0'
+      },
+      {
+        id:'7',
+        title:'Seoul Esports Finals',
+        source:'BBC',
+        topic:'Sports',
+        country:'KR',
+        region:'Asia',
+        lat:37.5665, lng:126.9780,
+        videoId:'Ua7jtqqXGjY'
+      },
 
       // Middle East
-      { id:'8', title:'Tel Aviv Startup Pulse', source:'YNET', topic:'Tech', country:'IL', region:'Middle East', lat:32.0853, lng:34.7818, url:'#' },
-      { id:'9', title:'Dubai Lifestyle Trends', source:'REUTERS', topic:'Culture', country:'AE', region:'Middle East', lat:25.2048, lng:55.2708, url:'#' }
+      {
+        id:'8',
+        title:'Tel Aviv Startup Pulse',
+        source:'YNET',
+        topic:'Tech',
+        country:'IL',
+        region:'Middle East',
+        lat:32.0853, lng:34.7818,
+        videoId:'YDewrrfN4NY'
+      },
+      {
+        id:'9',
+        title:'Dubai Lifestyle Trends',
+        source:'REUTERS',
+        topic:'Culture',
+        country:'AE',
+        region:'Middle East',
+        lat:25.2048, lng:55.2708,
+        videoId:'3C3lvtqjbwo'
+      }
     ];
 
     // --- State ---
@@ -147,12 +333,44 @@
       regions: new Set()
     };
 
-    // --- Helpers ---
+    // --- Player elements ---
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
 
+    const playerPanel = $('#playerPanel');
+    const playerTitle = $('#playerTitle');
+    const playerMeta  = $('#playerMeta');
+    const playerPlaceholder = $('#playerPlaceholder');
+    const playerFrameWrap   = $('#playerFrameWrap');
+    const ytFrame = $('#ytFrame');
+    const playerClose = $('#playerClose');
+
+    function escapeHtml(s='') {
+      return s.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"
+      }[c]));
+    }
+
+    function setCurrentVideo(v) {
+      if (!v || !v.videoId) return;
+      const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
+      ytFrame.src = embedUrl;
+      playerTitle.textContent = v.title;
+      playerMeta.textContent  = `${v.source} • ${v.topic} • ${v.region}`;
+      playerPlaceholder.style.display = 'none';
+      playerFrameWrap.style.display   = 'block';
+    }
+
+    playerClose.addEventListener('click', () => {
+      ytFrame.src = '';
+      playerFrameWrap.style.display = 'none';
+      playerPlaceholder.style.display = 'flex';
+      playerTitle.textContent = 'Select a point on the map';
+      playerMeta.textContent  = 'No video playing';
+    });
+
+    // --- Markers render ---
     function renderMarkers(list) {
-      // clear old
       markers.forEach(m => map.removeLayer(m));
       markers = [];
 
@@ -161,15 +379,17 @@
           .bindPopup(`
             <b>${escapeHtml(v.title)}</b><br/>
             <small>Source: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
-            <a class="link" href="${v.url}" target="_blank" rel="noopener">Open source ↗</a>
+            <span style="font-size:11px;color:#9fb0c2;">Click marker to play inside the panel.</span>
           `);
+
+        m.on('click', () => {
+          setCurrentVideo(v);
+        });
+
         markers.push(m);
       });
-      $('#count').textContent = `${list.length} result${list.length===1?'':'s'}`;
-    }
 
-    function escapeHtml(s=''){
-      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[c]));
+      $('#count').textContent = `${list.length} result${list.length===1?'':'s'}`;
     }
 
     function applyFilters() {
@@ -186,7 +406,6 @@
         return matchesQ && matchesSource && matchesTopic && matchesRegion;
       });
 
-      // Update active filters label
       const af = [];
       if (hasSource) af.push([...state.sources].join(', '));
       if (hasTopic)  af.push([...state.topics].join(', '));
@@ -230,7 +449,6 @@
       applyFilters();
     });
 
-    // collapse/expand
     const panel = $('#filters');
     const toggle = $('#toggle');
     let collapsed = false;
@@ -240,7 +458,7 @@
       toggle.textContent = collapsed ? '▸' : '▾';
     });
 
-    // initial render
+    // Initial render
     applyFilters();
   </script>
 </body>
