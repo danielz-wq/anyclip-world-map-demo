@@ -556,6 +556,19 @@ function makeDraggable(el, handle) {
   handle.style.cursor = handle.style.cursor || 'move';
 
   handle.addEventListener('mousedown', (e) => {
+    // Don't start dragging when interacting with form controls
+    const t = e.target;
+    const tag = t.tagName;
+    if (
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      tag === 'BUTTON' ||
+      tag === 'SELECT' ||
+      t.isContentEditable
+    ) {
+      return; // let the input/button behave normally
+    }
+
     e.preventDefault();
     isDown = true;
 
@@ -583,6 +596,7 @@ function makeDraggable(el, handle) {
     document.removeEventListener('mouseup', onMouseUp);
   }
 }
+
 
 // apply draggable behavior
 const filtersPanel = document.getElementById('filters');
