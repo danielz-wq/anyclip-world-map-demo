@@ -188,43 +188,8 @@ html, body {
 	  border: 2px solid #ffffff; /* white outline */
 	  opacity: 0.7;
 	}
-	/* --- Side Promotional Cards Outside the Map --- */
-.side-card {
-  position: absolute;
-  top: 160px;
-  width: 240px;
-  padding: 18px 20px;
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.15);
-  border: 1px solid #e2e8f0;
-  font-size: 14px;
-  color: #1e293b;
-  z-index: 50;
-  backdrop-filter: blur(4px);
-}
+	
 
-.left-card { left: 20px; }
-.right-card { right: 20px; }
-
-.card-title {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: #0f172a;
-}
-
-.card-text {
-  font-size: 14px;
-  color: #334155;
-  line-height: 1.4;
-}
-
-/* Mobile: hide side cards to avoid clutter */
-@media (max-width: 1100px) {
-  .side-card {
-    display: none;
-  }
 }
 
 	  
@@ -233,20 +198,6 @@ html, body {
 <body>
   <div id="map"></div>
 
-	<!-- Side Promo Cards -->
-<div class="side-card left-card">
-  <div class="card-title">🌍 Trending Now</div>
-  <div class="card-text">
-    Real-time highlights of what the world is watching.
-  </div>
-</div>
-
-<div class="side-card right-card">
-  <div class="card-title">🎥 AnyClip Live</div>
-  <div class="card-text">
-    Explore past, current, and upcoming AnyClip events.
-  </div>
-</div>
 
 	
   <!-- Floating Filters -->
