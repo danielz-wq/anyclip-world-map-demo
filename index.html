@@ -822,6 +822,10 @@
         if (!isDown) return;
         el.style.left = (e.clientX - offsetX) + 'px';
         el.style.top  = (e.clientY - offsetY) + 'px';
+        // If we're dragging the filters panel, keep the ranking panel under it
+        if (el === filtersPanel && rankingPanelEl) {
+          positionRankingUnderFilters();
+        }
       }
 
       function onMouseUp() {
@@ -831,16 +835,25 @@
       }
     }
 
-    const filtersPanel = document.getElementById('filters');
+       const filtersPanel = document.getElementById('filters');
     const playerPanelEl = document.getElementById('playerPanel');
     const playerHeaderEl = playerPanelEl.querySelector('.player-header');
     const rankingPanelEl = document.getElementById('rankingPanel');
 
+    // Position ranking panel just under the filters panel
+    function positionRankingUnderFilters() {
+      if (!filtersPanel || !rankingPanelEl) return;
+      const rect = filtersPanel.getBoundingClientRect();
+      rankingPanelEl.style.left = rect.left + 'px';
+      rankingPanelEl.style.top  = (rect.bottom + 12) + 'px'; // 12px gap under filters
+    }
+
     makeDraggable(filtersPanel, filtersPanel);
     makeDraggable(playerPanelEl, playerHeaderEl);
-    if (rankingPanelEl) {
-      makeDraggable(rankingPanelEl, rankingPanelEl);
-    }
+
+    // Initial position when page loads
+    positionRankingUnderFilters();
+
 
     // --- Load videos from external JSON and then render ---
     fetch('videos.json')
