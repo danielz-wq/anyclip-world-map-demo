@@ -521,51 +521,51 @@
 
     // --- Markers render ---
     function renderMarkers(list) {
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
+  // Clear old markers
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
 
-      list.forEach(v => {
-        let markerIcon = null;
-
-		if (v.eventPhase === 'past') {
-		  markerIcon = liveIcons.past;
-		} else if (v.eventPhase === 'current') {
-		  markerIcon = liveIcons.current;
-		} else if (v.eventPhase === 'future') {
-		  markerIcon = liveIcons.future;
-		}
-
-		const m = markerIcon
-		  ? L.marker([v.lat, v.lng], { icon: markerIcon }).addTo(map)
-		  : L.marker([v.lat, v.lng]).addTo(map);
-
-          let liveMessage = '';
-
-		if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
-		if (v.eventPhase === 'past')    liveMessage = 'Replay available';
-		if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
-
-		const popupText = `
-		  <b>${escapeHtml(v.title)}</b><br/>
-		  <small>Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
-		  ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
-		  <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
-		`;
-
-		const m = markerIcon
-		  ? L.marker([v.lat, v.lng], { icon: markerIcon }).addTo(map).bindPopup(popupText)
-		  : L.marker([v.lat, v.lng]).addTo(map).bindPopup(popupText);
-
-
-        m.on('click', () => {
-          setCurrentVideo(v);
-        });
-
-        markers.push(m);
-      });
-
-      $('#count').textContent = `${list.length} result${list.length===1?'':'s'}`;
+  list.forEach(v => {
+    // Choose icon for live events
+    let markerIcon = null;
+    if (v.eventPhase === 'past') {
+      markerIcon = liveIcons.past;
+    } else if (v.eventPhase === 'current') {
+      markerIcon = liveIcons.current;
+    } else if (v.eventPhase === 'future') {
+      markerIcon = liveIcons.future;
     }
+
+    // Tooltip line for live events
+    let liveMessage = '';
+    if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
+    if (v.eventPhase === 'past')    liveMessage = 'Replay available';
+    if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
+
+    const popupText = `
+      <b>${escapeHtml(v.title)}</b><br/>
+      <small>Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
+      ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
+      <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
+    `;
+
+    // Create marker ONCE
+    const marker = markerIcon
+      ? L.marker([v.lat, v.lng], { icon: markerIcon })
+      : L.marker([v.lat, v.lng]);
+
+    marker.addTo(map).bindPopup(popupText);
+
+    marker.on('click', () => {
+      setCurrentVideo(v);
+    });
+
+    markers.push(marker);
+  });
+
+  $('#count').textContent = `${list.length} result${list.length === 1 ? '' : 's'}`;
+}
+
 
     function applyFilters() {
 	  const q = state.q.trim().toLowerCase();
