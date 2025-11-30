@@ -5,34 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AnyClip World Map Demo 🌍</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
     :root {
       --bg:#0b0f14; --panel:#121821; --muted:#9fb0c2; --text:#e6edf3; --accent:#49a0ff;
       --chip:#192231; --chipOn:#1f2b3d; --shadow:0 10px 30px rgba(0,0,0,.35);
     }
-html, body {
-  margin: 0;
-  height: 100%;
-  background: radial-gradient(circle at top, #f3f5fb 0, #dde3f0 40%, #cfd5e1 100%);
-  color: #111827;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-}
 
-/* Map card */
-#map {
-  height: 82vh;
-  width: 78vw;
-  margin: 32px auto;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow:
-    0 18px 40px rgba(15,23,42,0.23),
-    0 0 0 1px rgba(15,23,42,0.08);
-}
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: radial-gradient(circle at top, #f3f5fb 0, #dde3f0 40%, #cfd5e1 100%);
+      color: #111827;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
 
-
-
+    /* Map card */
+    #map {
+      height: 82vh;
+      width: 78vw;
+      margin: 32px auto;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow:
+        0 18px 40px rgba(15,23,42,0.23),
+        0 0 0 1px rgba(15,23,42,0.08);
+    }
 
     /* Floating filter panel */
     .filters {
@@ -154,129 +153,183 @@ html, body {
       .filters { width:auto; right:16px; }
       .player-panel { left:16px; right:16px; width:auto; }
     }
-	
-	/* --- Live event marker styles --- */
-	.marker-live-past .dot-past {
-	  width: 18px;
-	  height: 18px;
-	  background: #3da5ff; /* blue */
-	  border-radius: 50%;
-	  border: 2px solid white;
-	}
 
-	.marker-live-current .dot-current {
-	  width: 18px;
-	  height: 18px;
-	  background: #3cff76; /* green */
-	  border-radius: 50%;
-	  border: 2px solid white;
-	  box-shadow: 0 0 0 rgba(0,255,0,0.4);
-	  animation: pulse 1.5s infinite;
-	}
+    /* --- Live event marker styles --- */
+    .marker-live-past .dot-past {
+      width: 18px;
+      height: 18px;
+      background: #3da5ff; /* blue */
+      border-radius: 50%;
+      border: 2px solid white;
+    }
 
-	@keyframes pulse {
-	  0% { box-shadow: 0 0 0 0 rgba(0,255,0,0.5); }
-	  70% { box-shadow: 0 0 0 12px rgba(0,255,0,0); }
-	  100% { box-shadow: 0 0 0 0 rgba(0,255,0,0); }
-	}
+    .marker-live-current .dot-current {
+      width: 18px;
+      height: 18px;
+      background: #3cff76; /* green */
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 rgba(0,255,0,0.4);
+      animation: pulse 1.5s infinite;
+    }
 
-	.marker-live-future .dot-future {
-	  width: 18px;
-	  height: 18px;
-	  background: transparent;
-	  border-radius: 50%;
-	  border: 2px solid #ffffff; /* white outline */
-	  opacity: 0.7;
-	}
-	/* --- Bottom Display Banners --- */
-.banner-row {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin: 0 auto 24px;
-  margin-top: -8px; /* מרים אותם קצת קרוב למפה */
-}
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0,255,0,0.5); }
+      70% { box-shadow: 0 0 0 12px rgba(0,255,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,255,0,0); }
+    }
 
-.banner-slot {
-  width: 360px;
-  max-width: 42vw;
-  background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid #d4d4d8;
-  box-shadow: 0 10px 26px rgba(15,23,42,0.15);
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  cursor: default;
-}
+    .marker-live-future .dot-future {
+      width: 18px;
+      height: 18px;
+      background: transparent;
+      border-radius: 50%;
+      border: 2px solid #ffffff; /* white outline */
+      opacity: 0.7;
+    }
 
-.banner-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #6b7280;
-  margin-bottom: 4px;
-}
+    /* --- Bottom Display Banners --- */
+    .banner-row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 0 auto 24px;
+      margin-top: -8px; /* מרים אותם קצת קרוב למפה */
+    }
 
-.banner-main {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 4px;
-}
+    .banner-slot {
+      width: 360px;
+      max-width: 42vw;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #d4d4d8;
+      box-shadow: 0 10px 26px rgba(15,23,42,0.15);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+    }
 
-.banner-sub {
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.4;
-}
+    .banner-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
 
-/* במסכים צרים – באנר אחד בכל שורה */
-@media (max-width: 900px) {
-  .banner-row {
-    flex-direction: column;
-    align-items: center;
-  }
-  .banner-slot {
-    width: 90%;
-    max-width: 480px;
-  }
-}
+    .banner-main {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
 
+    .banner-sub {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
 
+    /* במסכים צרים – באנר אחד בכל שורה */
+    @media (max-width: 900px) {
+      .banner-row {
+        flex-direction: column;
+        align-items: center;
+      }
+      .banner-slot {
+        width: 90%;
+        max-width: 480px;
+      }
+    }
 
+    .heat-btn {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 999px;
+      border: 1px solid #1d4ed8;
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .heat-btn:hover {
+      background: #1d4ed8;
+      color: #f9fafb;
+    }
 
-	  
+    /* --- Ranking panel --- */
+    .ranking-panel {
+      width: 80%;
+      max-width: 900px;
+      margin: 0 auto 16px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.12);
+      padding: 10px 16px;
+      font-size: 13px;
+      color: #111827;
+    }
+
+    .ranking-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    #rankingList {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    #rankingList li {
+      margin: 2px 0;
+    }
+
+    #rankingList span.score {
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    #rankingList span.meta {
+      color: #6b7280;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
-<!-- Bottom Display Banners -->
-<div class="banner-row">
-  <div class="banner-slot">
-    <div class="banner-label">Sponsored</div>
-    <div class="banner-main">AnyClip Contextual Video Ads</div>
-    <div class="banner-sub">
-      Reach viewers at the exact moment of highest intent.
+
+  <!-- Bottom Display Banners -->
+  <div class="banner-row">
+    <div class="banner-slot">
+      <div class="banner-label">Sponsored</div>
+      <div class="banner-main">AnyClip Contextual Video Ads</div>
+      <div class="banner-sub">
+        Reach viewers at the exact moment of highest intent.
+      </div>
+    </div>
+
+    <div class="banner-slot">
+      <div class="banner-label">Partners</div>
+      <div class="banner-main">Premium Publisher Inventory</div>
+      <div class="banner-sub">
+        Showcase your video content on brand-safe, high-impact placements.
+      </div>
     </div>
   </div>
 
-  <div class="banner-slot">
-    <div class="banner-label">Partners</div>
-    <div class="banner-main">Premium Publisher Inventory</div>
-    <div class="banner-sub">
-      Showcase your video content on brand-safe, high-impact placements.
-    </div>
+  <!-- Popularity Ranking Panel -->
+  <div class="ranking-panel" id="rankingPanel">
+    <div class="ranking-title">Top Videos in Current View</div>
+    <ol id="rankingList"></ol>
   </div>
-</div>
 
-
-	
   <!-- Floating Filters -->
   <div class="filters" id="filters">
     <button class="toggle" id="toggle" title="Collapse/Expand">▾</button>
-	 <!-- NEW: Product title -->
+    <!-- Product title -->
     <div style="margin-bottom:12px;">
       <div style="
         font-size:22px;
@@ -335,18 +388,22 @@ html, body {
         <div class="chip" data-value="Middle East">Middle East</div>
       </div>
     </div>
-	<div class="row group">
-	  <div class="label">AnyClip Live Events</div>
-	  <div class="chips" id="liveEvents">
-		<div class="chip" data-value="past">Past</div>
-		<div class="chip" data-value="current">Current</div>
-		<div class="chip" data-value="future">Future</div>
-	  </div>
-	</div>
+
+    <div class="row group">
+      <div class="label">AnyClip Live Events</div>
+      <div class="chips" id="liveEvents">
+        <div class="chip" data-value="past">Past</div>
+        <div class="chip" data-value="current">Current</div>
+        <div class="chip" data-value="future">Future</div>
+      </div>
+    </div>
 
     <div class="meta">
-      <div id="count">0 results</div>
-      <div id="activeFilters">No filters</div>
+      <div>
+        <div id="count">0 results</div>
+        <div id="activeFilters">No filters</div>
+      </div>
+      <button class="heat-btn" id="heatToggle">Heatmap: Off</button>
     </div>
   </div>
 
@@ -375,57 +432,62 @@ html, body {
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <script>
-	  let demoVideos = []; // will be filled from videos.json
+    let demoVideos = []; // will be filled from videos.json
 
-   // --- Map init ---
-		const worldBounds = L.latLngBounds(
-		  L.latLng(-85, -180),
-		  L.latLng(85, 180)
-		);
-		
-		const map = L.map('map', {
-		  zoomControl: true,
-		  maxBounds: worldBounds,
-		  maxBoundsViscosity: 1.0  // "sticky" at the edges
-		}).setView([20, 0], 2);
-		
-		L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		  maxZoom: 7,
-		  noWrap: true,                       // <– prevents duplicate worlds
-		  bounds: worldBounds,
-		  attribution: '© OpenStreetMap contributors'
-		}).addTo(map);
-		
-		// --- Custom marker icons for Live Events ---
-		const liveIcons = {
-		  past: L.divIcon({
-			className: "marker-live-past",
-			iconSize: [22, 22],
-			html: `<div class="dot-past"></div>`
-		  }),
-		  current: L.divIcon({
-			className: "marker-live-current",
-			iconSize: [22, 22],
-			html: `<div class="dot-current"></div>`
-		  }),
-		  future: L.divIcon({
-			className: "marker-live-future",
-			iconSize: [22, 22],
-			html: `<div class="dot-future"></div>`
-		  })
-		};
+    // --- Map init ---
+    const worldBounds = L.latLngBounds(
+      L.latLng(-85, -180),
+      L.latLng(85, 180)
+    );
 
+    const map = L.map('map', {
+      zoomControl: true,
+      maxBounds: worldBounds,
+      maxBoundsViscosity: 1.0  // "sticky" at the edges
+    }).setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 7,
+      noWrap: true,                       // prevents duplicate worlds
+      bounds: worldBounds,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // --- Custom marker icons for Live Events ---
+    const liveIcons = {
+      past: L.divIcon({
+        className: "marker-live-past",
+        iconSize: [22, 22],
+        html: `<div class="dot-past"></div>`
+      }),
+      current: L.divIcon({
+        className: "marker-live-current",
+        iconSize: [22, 22],
+        html: `<div class="dot-current"></div>`
+      }),
+      future: L.divIcon({
+        className: "marker-live-future",
+        iconSize: [22, 22],
+        html: `<div class="dot-future"></div>`
+      })
+    };
 
     // --- State ---
     let markers = [];
+    let heatLayer = null;
+    let heatOn = false;
+    let currentFiltered = [];
+
     const state = {
       q: '',
       sources: new Set(),
       topics: new Set(),
       regions: new Set(),
-	  livePhase: null   // 'past' | 'current' | 'future' | null
+      livePhase: null   // 'past' | 'current' | 'future' | null
     };
 
     // --- Player elements ---
@@ -447,32 +509,37 @@ html, body {
     }
 
     function setCurrentVideo(v) {
-	  if (!v) return;
+      if (!v) return;
 
-	  // meta text includes live phase if present
-	  const phaseLabel = v.eventPhase
-		? ` • ${v.eventPhase.toUpperCase()} event`
-		: '';
-	  playerTitle.textContent = v.title;
-	  playerMeta.textContent  = `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}`;
+      const phaseLabel = v.eventPhase
+        ? ` • ${v.eventPhase.toUpperCase()} event`
+        : '';
 
-	  // Future event or no videoId – show “coming soon” panel instead of player
-	  if (v.eventPhase === 'future' || !v.videoId) {
-		ytFrame.src = '';
-		playerFrameWrap.style.display   = 'none';
-		playerPlaceholder.style.display = 'flex';
-		playerPlaceholder.textContent   =
-		  'This is a planned AnyClip Live Event.\nStay tuned for more details.';
-		return;
-	  }
+      playerTitle.textContent = v.title;
 
-	  // Past / current events – play YouTube
-	  const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
-	  ytFrame.src = embedUrl;
-	  playerPlaceholder.style.display = 'none';
-	  playerFrameWrap.style.display   = 'block';
-	}
+      const scoreText = typeof v.engagementScore === 'number'
+        ? ` • Score: ${v.engagementScore}/100`
+        : '';
 
+      playerMeta.textContent =
+        `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}${scoreText}`;
+
+      // Future event or no videoId – show “coming soon”
+      if (v.eventPhase === 'future' || !v.videoId) {
+        ytFrame.src = '';
+        playerFrameWrap.style.display   = 'none';
+        playerPlaceholder.style.display = 'flex';
+        playerPlaceholder.textContent   =
+          'This is a planned AnyClip Live Event.\nStay tuned for more details.';
+        return;
+      }
+
+      // Past / current events – play YouTube
+      const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
+      ytFrame.src = embedUrl;
+      playerPlaceholder.style.display = 'none';
+      playerFrameWrap.style.display   = 'block';
+    }
 
     playerClose.addEventListener('click', () => {
       ytFrame.src = '';
@@ -484,80 +551,139 @@ html, body {
 
     // --- Markers render ---
     function renderMarkers(list) {
-  // Clear old markers
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
 
-  list.forEach(v => {
-    // Choose icon for live events
-    let markerIcon = null;
-    if (v.eventPhase === 'past') {
-      markerIcon = liveIcons.past;
-    } else if (v.eventPhase === 'current') {
-      markerIcon = liveIcons.current;
-    } else if (v.eventPhase === 'future') {
-      markerIcon = liveIcons.future;
+      list.forEach(v => {
+        let markerIcon = null;
+        if (v.eventPhase === 'past') {
+          markerIcon = liveIcons.past;
+        } else if (v.eventPhase === 'current') {
+          markerIcon = liveIcons.current;
+        } else if (v.eventPhase === 'future') {
+          markerIcon = liveIcons.future;
+        }
+
+        let liveMessage = '';
+        if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
+        if (v.eventPhase === 'past')    liveMessage = 'Replay available';
+        if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
+
+        const popupText = `
+          <b>${escapeHtml(v.title)}</b><br/>
+          <small>
+            Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}
+          </small><br/>
+          <small style="color:#2563eb;">
+            Engagement score: ${v.engagementScore ?? '–'}/100
+          </small><br/>
+          ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
+          <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
+        `;
+
+        const marker = markerIcon
+          ? L.marker([v.lat, v.lng], { icon: markerIcon })
+          : L.marker([v.lat, v.lng]);
+
+        marker.addTo(map).bindPopup(popupText);
+
+        marker.on('click', () => {
+          setCurrentVideo(v);
+        });
+
+        markers.push(marker);
+      });
+
+      $('#count').textContent = `${list.length} result${list.length === 1 ? '' : 's'}`;
     }
 
-    // Tooltip line for live events
-    let liveMessage = '';
-    if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
-    if (v.eventPhase === 'past')    liveMessage = 'Replay available';
-    if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
+    // --- Heatmap ---
+    function updateHeatmap(list) {
+      if (!heatOn) {
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+          heatLayer = null;
+        }
+        return;
+      }
 
-    const popupText = `
-      <b>${escapeHtml(v.title)}</b><br/>
-      <small>Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
-      ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
-      <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
-    `;
+      const points = list
+        .filter(v => typeof v.engagementScore === 'number')
+        .map(v => [v.lat, v.lng, v.engagementScore / 100]); // intensity 0–1
 
-    // Create marker ONCE
-    const marker = markerIcon
-      ? L.marker([v.lat, v.lng], { icon: markerIcon })
-      : L.marker([v.lat, v.lng]);
+      if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+      }
+      if (!points.length) return;
 
-    marker.addTo(map).bindPopup(popupText);
+      heatLayer = L.heatLayer(points, {
+        radius: 25,
+        blur: 18,
+        maxZoom: 7
+      }).addTo(map);
+    }
 
-    marker.on('click', () => {
-      setCurrentVideo(v);
-    });
+    // --- Ranking panel ---
+    function updateRanking(list) {
+      const rankingList = document.getElementById('rankingList');
+      if (!rankingList) return;
 
-    markers.push(marker);
-  });
+      rankingList.innerHTML = '';
 
-  $('#count').textContent = `${list.length} result${list.length === 1 ? '' : 's'}`;
-}
+      if (!list.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No videos for current filters.';
+        rankingList.appendChild(li);
+        return;
+      }
 
+      const top = [...list]
+        .filter(v => typeof v.engagementScore === 'number')
+        .sort((a, b) => b.engagementScore - a.engagementScore)
+        .slice(0, 5);
 
+      top.forEach(v => {
+        const li = document.createElement('li');
+        li.innerHTML =
+          `<span class="score">${v.engagementScore}</span>` +
+          ` – ${escapeHtml(v.title)} ` +
+          `<span class="meta">(${escapeHtml(v.region)} • ${escapeHtml(v.source)})</span>`;
+        rankingList.appendChild(li);
+      });
+    }
+
+    // --- Filters ---
     function applyFilters() {
-	  const q = state.q.trim().toLowerCase();
-	  const hasSource   = state.sources.size > 0;
-	  const hasTopic    = state.topics.size > 0;
-	  const hasRegion   = state.regions.size > 0;
-	  const hasLivePhase = !!state.livePhase;
+      const q = state.q.trim().toLowerCase();
+      const hasSource    = state.sources.size > 0;
+      const hasTopic     = state.topics.size > 0;
+      const hasRegion    = state.regions.size > 0;
+      const hasLivePhase = !!state.livePhase;
 
-	  const filtered = demoVideos.filter(v => {
-		const matchesQ       = !q || v.title.toLowerCase().includes(q);
-		const matchesSource  = !hasSource   || state.sources.has(v.source);
-		const matchesTopic   = !hasTopic    || state.topics.has(v.topic);
-		const matchesRegion  = !hasRegion   || state.regions.has(v.region);
-		const matchesLive    = !hasLivePhase || v.eventPhase === state.livePhase;
+      const filtered = demoVideos.filter(v => {
+        const matchesQ       = !q || v.title.toLowerCase().includes(q);
+        const matchesSource  = !hasSource   || state.sources.has(v.source);
+        const matchesTopic   = !hasTopic    || state.topics.has(v.topic);
+        const matchesRegion  = !hasRegion   || state.regions.has(v.region);
+        const matchesLive    = !hasLivePhase || v.eventPhase === state.livePhase;
 
-		return matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
-	  });
+        return matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
+      });
 
-	  const af = [];
-	  if (hasSource)   af.push([...state.sources].join(', '));
-	  if (hasTopic)    af.push([...state.topics].join(', '));
-	  if (hasRegion)   af.push([...state.regions].join(', '));
-	  if (hasLivePhase) af.push(`Live: ${state.livePhase}`);
+      const af = [];
+      if (hasSource)    af.push([...state.sources].join(', '));
+      if (hasTopic)     af.push([...state.topics].join(', '));
+      if (hasRegion)    af.push([...state.regions].join(', '));
+      if (hasLivePhase) af.push(`Live: ${state.livePhase}`);
 
-	  $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
+      $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
 
-	  renderMarkers(filtered);
-	}
-
+      currentFiltered = filtered;
+      renderMarkers(filtered);
+      updateHeatmap(filtered);
+      updateRanking(filtered);
+    }
 
     function wireChips(containerId, targetSet) {
       $$('#' + containerId + ' .chip').forEach(chip => {
@@ -579,27 +705,25 @@ html, body {
     wireChips('sources', state.sources);
     wireChips('topics', state.topics);
     wireChips('regions', state.regions);
-	
-	// Live Events chips – single selection (Past / Current / Future)
-	const liveChips = $$('#liveEvents .chip');
-	liveChips.forEach(chip => {
-	  chip.addEventListener('click', () => {
-		const val = chip.getAttribute('data-value');
 
-		if (state.livePhase === val) {
-		  // clicking the same one again clears the filter
-		  state.livePhase = null;
-		  chip.classList.remove('active');
-		} else {
-		  state.livePhase = val;
-		  // make it single-select
-		  liveChips.forEach(c => c.classList.remove('active'));
-		  chip.classList.add('active');
-		}
+    // Live Events chips – single selection
+    const liveChips = $$('#liveEvents .chip');
+    liveChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.getAttribute('data-value');
 
-		applyFilters();
-	  });
-	});
+        if (state.livePhase === val) {
+          state.livePhase = null;
+          chip.classList.remove('active');
+        } else {
+          state.livePhase = val;
+          liveChips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+        }
+
+        applyFilters();
+      });
+    });
 
     $('#search').addEventListener('input', (e) => {
       state.q = e.target.value || '';
@@ -609,7 +733,10 @@ html, body {
     $('#reset').addEventListener('click', () => {
       state.q = '';
       $('#search').value = '';
-      state.sources.clear(); state.topics.clear(); state.regions.clear();
+      state.sources.clear();
+      state.topics.clear();
+      state.regions.clear();
+      state.livePhase = null;
       $$('.chip.active').forEach(c => c.classList.remove('active'));
       applyFilters();
     });
@@ -623,85 +750,96 @@ html, body {
       toggle.textContent = collapsed ? '▸' : '▾';
     });
 
+    const heatToggle = document.getElementById('heatToggle');
+    if (heatToggle) {
+      heatToggle.addEventListener('click', () => {
+        heatOn = !heatOn;
+        heatToggle.textContent = heatOn ? 'Heatmap: On' : 'Heatmap: Off';
+        updateHeatmap(currentFiltered);
+      });
+    }
+
     // --- Make panels draggable ---
-function makeDraggable(el, handle) {
-  let isDown = false;
-  let offsetX = 0;
-  let offsetY = 0;
+    function makeDraggable(el, handle) {
+      let isDown = false;
+      let offsetX = 0;
+      let offsetY = 0;
 
-  handle.style.cursor = handle.style.cursor || 'move';
+      handle.style.cursor = handle.style.cursor || 'move';
 
-  handle.addEventListener('mousedown', (e) => {
-    // Don't start dragging when interacting with form controls
-    const t = e.target;
-    const tag = t.tagName;
-    if (
-      tag === 'INPUT' ||
-      tag === 'TEXTAREA' ||
-      tag === 'BUTTON' ||
-      tag === 'SELECT' ||
-      t.isContentEditable
-    ) {
-      return; // let the input/button behave normally
+      handle.addEventListener('mousedown', (e) => {
+        const t = e.target;
+        const tag = t.tagName;
+        if (
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          tag === 'BUTTON' ||
+          tag === 'SELECT' ||
+          t.isContentEditable
+        ) {
+          return;
+        }
+
+        e.preventDefault();
+        isDown = true;
+
+        const rect = el.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      function onMouseMove(e) {
+        if (!isDown) return;
+        el.style.left = (e.clientX - offsetX) + 'px';
+        el.style.top  = (e.clientY - offsetY) + 'px';
+      }
+
+      function onMouseUp() {
+        isDown = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
     }
 
-    e.preventDefault();
-    isDown = true;
+    const filtersPanel = document.getElementById('filters');
+    const playerPanelEl = document.getElementById('playerPanel');
+    const playerHeaderEl = playerPanelEl.querySelector('.player-header');
 
-    const rect = el.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
+    makeDraggable(filtersPanel, filtersPanel);
+    makeDraggable(playerPanelEl, playerHeaderEl);
 
-    // switch to left/top control (so right/bottom won't fight us)
-    el.style.right = 'auto';
-    el.style.bottom = 'auto';
+    // --- Load videos from external JSON and then render ---
+    fetch('videos.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load videos.json: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Add engagementScore if missing (40–99) – deterministic from id
+        demoVideos = data.map(v => {
+          if (typeof v.engagementScore === 'number') return v;
+          const digits = String(v.id || '')
+            .split('')
+            .filter(ch => ch >= '0' && ch <= '9')
+            .join('');
+          const base = digits ? parseInt(digits, 10) : Math.floor(Math.random() * 1000);
+          const score = 40 + (base * 13) % 60; // 40–99
+          return { ...v, engagementScore: score };
+        });
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  });
-
-  function onMouseMove(e) {
-    if (!isDown) return;
-    el.style.left = (e.clientX - offsetX) + 'px';
-    el.style.top  = (e.clientY - offsetY) + 'px';
-  }
-
-  function onMouseUp() {
-    isDown = false;
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-  }
-}
-
-
-// apply draggable behavior
-const filtersPanel = document.getElementById('filters');
-const playerPanelEl = document.getElementById('playerPanel');
-const playerHeaderEl = playerPanelEl.querySelector('.player-header');
-
-// drag the filters by grabbing anywhere on the panel
-makeDraggable(filtersPanel, filtersPanel);
-
-// drag the player by grabbing the header bar
-makeDraggable(playerPanelEl, playerHeaderEl);
-
-// --- Load videos from external JSON and then render ---
-fetch('videos.json')
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Failed to load videos.json: ' + response.status);
-    }
-    return response.json();
-  })
-  .then(data => {
-    demoVideos = data;
-    applyFilters();  // now that data is loaded, render markers
-  })
-  .catch(err => {
-    console.error(err);
-    // optional: show some message in the UI if you want
-  });
-
+        applyFilters();  // now that data is loaded, render markers + heatmap + ranking
+      })
+      .catch(err => {
+        console.error(err);
+      });
   </script>
 </body>
 </html>
