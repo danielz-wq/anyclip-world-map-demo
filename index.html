@@ -137,6 +137,41 @@
       .filters { width:auto; right:16px; }
       .player-panel { left:16px; right:16px; width:auto; }
     }
+	
+	/* --- Live event marker styles --- */
+	.marker-live-past .dot-past {
+	  width: 18px;
+	  height: 18px;
+	  background: #3da5ff; /* blue */
+	  border-radius: 50%;
+	  border: 2px solid white;
+	}
+
+	.marker-live-current .dot-current {
+	  width: 18px;
+	  height: 18px;
+	  background: #3cff76; /* green */
+	  border-radius: 50%;
+	  border: 2px solid white;
+	  box-shadow: 0 0 0 rgba(0,255,0,0.4);
+	  animation: pulse 1.5s infinite;
+	}
+
+	@keyframes pulse {
+	  0% { box-shadow: 0 0 0 0 rgba(0,255,0,0.5); }
+	  70% { box-shadow: 0 0 0 12px rgba(0,255,0,0); }
+	  100% { box-shadow: 0 0 0 0 rgba(0,255,0,0); }
+	}
+
+	.marker-live-future .dot-future {
+	  width: 18px;
+	  height: 18px;
+	  background: transparent;
+	  border-radius: 50%;
+	  border: 2px solid #ffffff; /* white outline */
+	  opacity: 0.7;
+	}
+
   </style>
 </head>
 <body>
@@ -175,7 +210,7 @@
     </div>
 
     <div class="row group">
-      <div class="label">Source</div>
+      <div class="label">Publisher</div>
       <div class="chips" id="sources">
         <div class="chip" data-value="BBC">BBC</div>
         <div class="chip" data-value="CNN">CNN</div>
@@ -264,6 +299,25 @@
 		  bounds: worldBounds,
 		  attribution: '© OpenStreetMap contributors'
 		}).addTo(map);
+		
+		// --- Custom marker icons for Live Events ---
+		const liveIcons = {
+		  past: L.divIcon({
+			className: "marker-live-past",
+			iconSize: [22, 22],
+			html: `<div class="dot-past"></div>`
+		  }),
+		  current: L.divIcon({
+			className: "marker-live-current",
+			iconSize: [22, 22],
+			html: `<div class="dot-current"></div>`
+		  }),
+		  future: L.divIcon({
+			className: "marker-live-future",
+			iconSize: [22, 22],
+			html: `<div class="dot-future"></div>`
+		  })
+		};
 
 
     // --- Demo data (with YouTube videoId) ---
@@ -437,7 +491,7 @@
 		? ` • ${v.eventPhase.toUpperCase()} event`
 		: '';
 	  playerTitle.textContent = v.title;
-	  playerMeta.textContent  = `${v.source} • ${v.topic} • ${v.region}${phaseLabel}`;
+	  playerMeta.textContent  = `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}`;
 
 	  // Future event or no videoId – show “coming soon” panel instead of player
 	  if (v.eventPhase === 'future' || !v.videoId) {
@@ -471,12 +525,37 @@
       markers = [];
 
       list.forEach(v => {
-        const m = L.marker([v.lat, v.lng]).addTo(map)
-          .bindPopup(`
-            <b>${escapeHtml(v.title)}</b><br/>
-            <small>Source: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
-            <span style="font-size:11px;color:#9fb0c2;">Click marker to play inside the panel.</span>
-          `);
+        let markerIcon = null;
+
+		if (v.eventPhase === 'past') {
+		  markerIcon = liveIcons.past;
+		} else if (v.eventPhase === 'current') {
+		  markerIcon = liveIcons.current;
+		} else if (v.eventPhase === 'future') {
+		  markerIcon = liveIcons.future;
+		}
+
+		const m = markerIcon
+		  ? L.marker([v.lat, v.lng], { icon: markerIcon }).addTo(map)
+		  : L.marker([v.lat, v.lng]).addTo(map);
+
+          let liveMessage = '';
+
+		if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
+		if (v.eventPhase === 'past')    liveMessage = 'Replay available';
+		if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
+
+		const popupText = `
+		  <b>${escapeHtml(v.title)}</b><br/>
+		  <small>Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}</small><br/>
+		  ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
+		  <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
+		`;
+
+		const m = markerIcon
+		  ? L.marker([v.lat, v.lng], { icon: markerIcon }).addTo(map).bindPopup(popupText)
+		  : L.marker([v.lat, v.lng]).addTo(map).bindPopup(popupText);
+
 
         m.on('click', () => {
           setCurrentVideo(v);
