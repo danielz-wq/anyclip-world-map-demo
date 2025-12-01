@@ -703,6 +703,21 @@ body {
     const ytFrame = $('#ytFrame');
     const playerClose = $('#playerClose');
 
+    // Publisher URL mapping
+    function getPublisherUrl(publisher) {
+      const urls = {
+        'BBC': 'https://www.bbc.com',
+        'CNN': 'https://www.cnn.com',
+        'YNET': 'https://www.ynet.co.il',
+        'Reuters': 'https://www.reuters.com',
+        'Calcalist': 'https://www.calcalist.co.il',
+        'Haaretz': 'https://www.haaretz.com',
+        'Guardian': 'https://www.theguardian.com',
+        'NYT': 'https://www.nytimes.com'
+      };
+      return urls[publisher] || null;
+    }
+    
     function escapeHtml(s='') {
       return s.replace(/[&<>"']/g, c => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"
@@ -722,8 +737,14 @@ body {
         ? ` • Score: ${v.engagementScore}/100`
         : '';
 
-      playerMeta.textContent =
-        `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}${scoreText}`;
+      const publisherUrl = getPublisherUrl(v.source);
+      if (publisherUrl) {
+        playerMeta.innerHTML = 
+          `<a href="${publisherUrl}" target="_blank" style="color:#49a0ff;text-decoration:none;">${escapeHtml(v.source)}</a> (Publisher) • ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}${phaseLabel}${scoreText}`;
+      } else {
+        playerMeta.textContent =
+          `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}${scoreText}`;
+      }
 
       // Future event or no videoId – show “coming soon”
       if (v.eventPhase === 'future' || !v.videoId) {
@@ -770,10 +791,15 @@ body {
         if (v.eventPhase === 'past')    liveMessage = 'Replay available';
         if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
 
+        const publisherUrl = getPublisherUrl(v.source);
+        const publisherLink = publisherUrl 
+          ? `<a href="${publisherUrl}" target="_blank" style="color:#49a0ff;text-decoration:none;font-size:10px;margin-left:4px;">🔗 View site</a>`
+          : '';
+
         const popupText = `
           <b>${escapeHtml(v.title)}</b><br/>
           <small>
-            Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}
+            Publisher: ${escapeHtml(v.source)}${publisherLink} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}
           </small><br/>
           <small style="color:#2563eb;">
             Engagement score: ${v.engagementScore ?? '–'}/100
