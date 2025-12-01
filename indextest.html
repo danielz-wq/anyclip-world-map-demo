@@ -1,1 +1,925 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AnyClip World Map Demo 🌍</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
+  <style>
+    :root {
+      --bg:#0b0f14; --panel:#121821; --muted:#9fb0c2; --text:#e6edf3; --accent:#49a0ff;
+      --chip:#192231; --chipOn:#1f2b3d; --shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: radial-gradient(circle at top, #f3f5fb 0, #dde3f0 40%, #cfd5e1 100%);
+      color: #111827;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Map card */
+    #map {
+      height: 82vh;
+      width: 78vw;
+      margin: 32px auto;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow:
+        0 18px 40px rgba(15,23,42,0.23),
+        0 0 0 1px rgba(15,23,42,0.08);
+    }
+
+    /* Floating filter panel */
+    .filters {
+      position: fixed;
+      top: 16px; left: 16px;
+      width: 320px; max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .filters h2 {
+      margin: 0 0 8px; font-size: 16px; letter-spacing:.2px;
+    }
+    .row { display: grid; gap: 8px; margin: 10px 0; }
+    .group { border-top: 1px solid #223246; padding-top: 10px; }
+    .label {
+      font-size: 12px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px;
+    }
+    .chips { display:flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      background: var(--chip); border: 1px solid #263243; color: var(--text);
+      padding: 6px 10px; border-radius: 999px;
+      font-size: 12px; cursor: pointer; user-select: none;
+    }
+    .chip.active {
+      background: var(--chipOn); border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(73,160,255,.35) inset;
+    }
+    .controls { display:flex; gap:8px; align-items:center; }
+    .search {
+      width:100%; background: #0e141c; border: 1px solid #223246; border-radius: 10px;
+      color: var(--text); padding: 8px 10px; outline: none; font-size: 13px;
+    }
+    .btn {
+      background: var(--accent); color: #061320; border: none; border-radius: 10px;
+      padding: 8px 10px; font-weight: 600; cursor: pointer; font-size: 12px;
+    }
+    .meta {
+      display:flex; justify-content: space-between; align-items:center;
+      font-size:12px; color: var(--muted); margin-top: 6px;
+    }
+    .toggle {
+      position:absolute; top: -12px; right: -12px;
+      background:#0e141c; border:1px solid #223246; color:var(--text);
+      width: 32px; height:32px; border-radius: 999px;
+      cursor:pointer; display:grid; place-items:center; box-shadow:var(--shadow);
+    }
+    .collapsed { height: 46px; overflow: hidden; padding-bottom: 8px; }
+
+    .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+      background:#0e141c; color:var(--text); border:1px solid #2a384b;
+    }
+    a.link { color: var(--accent); text-decoration: none; }
+
+    /* Player panel */
+    .player-panel {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      width: 380px; max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .player-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding: 8px 10px 6px;
+      border-bottom: 1px solid #223246;
+      background:#0f151f;
+      cursor: move;
+    }
+    .player-title {
+      font-size: 13px; font-weight:600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-meta {
+      font-size: 11px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-close {
+      background: transparent; border:none; color:var(--muted);
+      font-size: 18px; cursor:pointer; padding: 0 4px;
+    }
+    .player-body {
+      padding: 8px;
+      background:#05080e;
+    }
+    .player-placeholder {
+      font-size: 12px; color: var(--muted);
+      min-height: 200px;
+      display:flex; align-items:center; justify-content:center;
+      text-align:center; padding: 10px;
+      border: 1px dashed #223246; border-radius: 10px;
+    }
+    .player-frame-wrap {
+      display:none;
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #223246;
+    }
+    .player-frame-wrap iframe {
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      border:0;
+    }
+
+    @media (max-width: 768px) {
+      .filters { width:auto; right:16px; }
+      .player-panel { left:16px; right:16px; width:auto; }
+    }
+
+    /* --- Live event marker styles --- */
+    .marker-live-past .dot-past {
+      width: 18px;
+      height: 18px;
+      background: #3da5ff; /* blue */
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+
+    .marker-live-current .dot-current {
+      width: 18px;
+      height: 18px;
+      background: #3cff76; /* green */
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 rgba(0,255,0,0.4);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0,255,0,0.5); }
+      70% { box-shadow: 0 0 0 12px rgba(0,255,0,0); }
+      100% { box-shadow: 0 0 0 0 rgba(0,255,0,0); }
+    }
+
+    .marker-live-future .dot-future {
+      width: 18px;
+      height: 18px;
+      background: transparent;
+      border-radius: 50%;
+      border: 3px solid #00aaff;  /* bright cyan outline */
+      opacity: 1;
+      box-shadow: 0 0 8px rgba(0,170,255,0.6);
+    }
+
+
+    /* --- Bottom Display Banners --- */
+    .banner-row {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 0 auto 24px;
+      margin-top: -8px;
+    }
+
+    .banner-slot {
+      width: 360px;
+      max-width: 42vw;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #d4d4d8;
+      box-shadow: 0 10px 26px rgba(15,23,42,0.15);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+    }
+
+    .banner-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+
+    .banner-main {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .banner-sub {
+      font-size: 13px;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 900px) {
+      .banner-row {
+        flex-direction: column;
+        align-items: center;
+      }
+      .banner-slot {
+        width: 90%;
+        max-width: 480px;
+      }
+    }
+
+    .heat-btn {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 999px;
+      border: 1px solid #1d4ed8;
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .heat-btn:hover {
+      background: #1d4ed8;
+      color: #f9fafb;
+    }
+
+    /* --- Ranking panel: dark, under filters --- */
+    .ranking-panel {
+      position: fixed;
+      left: 16px;
+      top: 280px; /* adjust if needed */
+      width: 320px;
+      max-width: calc(100% - 32px);
+      background: var(--panel);
+      border: 1px solid #243244;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text);
+      z-index: 950;
+    }
+
+    .ranking-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    #rankingList {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    #rankingList li {
+      margin: 2px 0;
+      color: var(--muted);
+    }
+
+    #rankingList span.score {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    #rankingList span.meta {
+      color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .ranking-panel {
+        left: 16px;
+        right: 16px;
+        width: auto;
+      }
+    }
+
+  /* horizontal score bar */
+.rank-barline {
+  height: 4px;
+  border-radius: 4px;
+  margin-top: 3px;
+  margin-bottom: 4px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.rank-high  { background:#ef4444 !important; }  /* red */
+.rank-mid   { background:#facc15 !important; }  /* yellow */
+.rank-low   { background:#22c55e !important; }  /* green */
+
+
+    
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Bottom Display Banners -->
+  <div class="banner-row">
+    <div class="banner-slot">
+      <div class="banner-label">Sponsored</div>
+      <div class="banner-main">AnyClip Contextual Video Ads</div>
+      <div class="banner-sub">
+        Reach viewers at the exact moment of highest intent.
+      </div>
+    </div>
+
+    <div class="banner-slot">
+      <div class="banner-label">Partners</div>
+      <div class="banner-main">Premium Publisher Inventory</div>
+      <div class="banner-sub">
+        Showcase your video content on brand-safe, high-impact placements.
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Filters -->
+  <div class="filters" id="filters">
+    <button class="toggle" id="toggle" title="Collapse/Expand">▾</button>
+    <!-- Product title -->
+    <div style="margin-bottom:12px;">
+      <div style="
+        font-size:22px;
+        font-weight:700;
+        color:var(--text);
+        letter-spacing:0.4px;
+      ">
+        AnyClip World Video Pulse 🌍
+      </div>
+      <div style="
+        font-size:12px;
+        color:var(--muted);
+        margin-top:4px;
+        line-height:1.35;
+      ">
+        A real-time global view of trending videos and live events.<br/>
+        Filter by region, topic, publisher, and AnyClip Live Events.
+      </div>
+    </div>
+
+    <h2>Filters</h2>
+
+    <div class="row">
+      <div class="controls">
+        <input id="search" class="search" placeholder="Search title… (e.g. Tokyo, marathon, BBC)" />
+        <button class="btn" id="reset">Reset</button>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Publisher</div>
+      <div class="chips" id="sources">
+        <div class="chip" data-value="BBC">BBC</div>
+        <div class="chip" data-value="CNN">CNN</div>
+        <div class="chip" data-value="YNET">YNET</div>
+        <div class="chip" data-value="REUTERS">Reuters</div>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Topic</div>
+      <div class="chips" id="topics">
+        <div class="chip" data-value="News">News</div>
+        <div class="chip" data-value="Sports">Sports</div>
+        <div class="chip" data-value="Tech">Tech</div>
+        <div class="chip" data-value="Food">Food</div>
+        <div class="chip" data-value="Culture">Culture</div>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">Region</div>
+      <div class="chips" id="regions">
+        <div class="chip" data-value="Americas">Americas</div>
+        <div class="chip" data-value="Europe">Europe</div>
+        <div class="chip" data-value="Asia">Asia</div>
+        <div class="chip" data-value="Middle East">Middle East</div>
+      </div>
+    </div>
+
+    <div class="row group">
+      <div class="label">AnyClip Live Events</div>
+      <div class="chips" id="liveEvents">
+        <div class="chip" data-value="past">Past</div>
+        <div class="chip" data-value="current">Current</div>
+        <div class="chip" data-value="future">Future</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div>
+        <div id="count">0 results</div>
+        <div id="activeFilters">No filters</div>
+      </div>
+      <button class="heat-btn" id="heatToggle">Heatmap: Off</button>
+    </div>
+  </div>
+
+  <!-- Ranking panel under filters -->
+  <div class="ranking-panel" id="rankingPanel">
+    <div class="ranking-title">Top Videos in Current View</div>
+    <ol id="rankingList"></ol>
+  </div>
+
+  <!-- Player panel -->
+  <div class="player-panel" id="playerPanel">
+    <div class="player-header">
+      <div>
+        <div id="playerTitle" class="player-title">Select a point on the map</div>
+        <div id="playerMeta" class="player-meta">No video playing</div>
+      </div>
+      <button id="playerClose" class="player-close" title="Close">×</button>
+    </div>
+    <div class="player-body">
+      <div id="playerPlaceholder" class="player-placeholder">
+        Click a marker on the map to start playing a video from that region.
+      </div>
+      <div class="player-frame-wrap" id="playerFrameWrap">
+        <iframe
+          id="ytFrame"
+          src=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  <script>
+    let demoVideos = []; // will be filled from videos.json
+
+    // --- Map init ---
+    const worldBounds = L.latLngBounds(
+      L.latLng(-85, -180),
+      L.latLng(85, 180)
+    );
+
+    const map = L.map('map', {
+      zoomControl: true,
+      maxBounds: worldBounds,
+      maxBoundsViscosity: 1.0
+    }).setView([20, 0], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 7,
+      noWrap: true,
+      bounds: worldBounds,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // --- Custom marker icons for Live Events ---
+    const liveIcons = {
+      past: L.divIcon({
+        className: "marker-live-past",
+        iconSize: [22, 22],
+        html: `<div class="dot-past"></div>`
+      }),
+      current: L.divIcon({
+        className: "marker-live-current",
+        iconSize: [22, 22],
+        html: `<div class="dot-current"></div>`
+      }),
+      future: L.divIcon({
+        className: "marker-live-future",
+        iconSize: [22, 22],
+        html: `<div class="dot-future"></div>`
+      })
+    };
+
+    // --- State ---
+    let markers = [];
+    let heatLayer = null;
+    let heatOn = false;
+    let currentFiltered = [];
+
+    const state = {
+      q: '',
+      sources: new Set(),
+      topics: new Set(),
+      regions: new Set(),
+      livePhase: null   // 'past' | 'current' | 'future' | null
+    };
+
+    // --- Player elements ---
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    const playerPanel = $('#playerPanel');
+    const playerTitle = $('#playerTitle');
+    const playerMeta  = $('#playerMeta');
+    const playerPlaceholder = $('#playerPlaceholder');
+    const playerFrameWrap   = $('#playerFrameWrap');
+    const ytFrame = $('#ytFrame');
+    const playerClose = $('#playerClose');
+
+    function escapeHtml(s='') {
+      return s.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"
+      }[c]));
+    }
+
+    function setCurrentVideo(v) {
+      if (!v) return;
+
+      const phaseLabel = v.eventPhase
+        ? ` • ${v.eventPhase.toUpperCase()} event`
+        : '';
+
+      playerTitle.textContent = v.title;
+
+      const scoreText = typeof v.engagementScore === 'number'
+        ? ` • Score: ${v.engagementScore}/100`
+        : '';
+
+      playerMeta.textContent =
+        `${v.source} (Publisher) • ${v.topic} • ${v.region}${phaseLabel}${scoreText}`;
+
+      // Future event or no videoId – show “coming soon”
+      if (v.eventPhase === 'future' || !v.videoId) {
+        ytFrame.src = '';
+        playerFrameWrap.style.display   = 'none';
+        playerPlaceholder.style.display = 'flex';
+        playerPlaceholder.textContent   =
+          'This is a planned AnyClip Live Event.\nStay tuned for more details.';
+        return;
+      }
+
+      // Past / current events – play YouTube
+      const embedUrl = `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0`;
+      ytFrame.src = embedUrl;
+      playerPlaceholder.style.display = 'none';
+      playerFrameWrap.style.display   = 'block';
+    }
+
+    playerClose.addEventListener('click', () => {
+      ytFrame.src = '';
+      playerFrameWrap.style.display = 'none';
+      playerPlaceholder.style.display = 'flex';
+      playerTitle.textContent = 'Select a point on the map';
+      playerMeta.textContent  = 'No video playing';
+    });
+
+    // --- Markers render ---
+    function renderMarkers(list) {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      list.forEach(v => {
+        let markerIcon = null;
+        if (v.eventPhase === 'past') {
+          markerIcon = liveIcons.past;
+        } else if (v.eventPhase === 'current') {
+          markerIcon = liveIcons.current;
+        } else if (v.eventPhase === 'future') {
+          markerIcon = liveIcons.future;
+        }
+
+        let liveMessage = '';
+        if (v.eventPhase === 'current') liveMessage = 'AnyClip Live Event – Streaming now';
+        if (v.eventPhase === 'past')    liveMessage = 'Replay available';
+        if (v.eventPhase === 'future')  liveMessage = 'Upcoming – details soon';
+
+        const popupText = `
+          <b>${escapeHtml(v.title)}</b><br/>
+          <small>
+            Publisher: ${escapeHtml(v.source)} • Topic: ${escapeHtml(v.topic)} • ${escapeHtml(v.region)}
+          </small><br/>
+          <small style="color:#2563eb;">
+            Engagement score: ${v.engagementScore ?? '–'}/100
+          </small><br/>
+          ${liveMessage ? `<span style="font-size:11px;color:#49ff9b;">${liveMessage}</span><br/>` : ''}
+          <span style="font-size:11px;color:#9fb0c2;">Click to watch in the player</span>
+        `;
+
+        const marker = markerIcon
+          ? L.marker([v.lat, v.lng], { icon: markerIcon })
+          : L.marker([v.lat, v.lng]);
+
+        marker.addTo(map).bindPopup(popupText);
+
+        marker.on('click', () => {
+          setCurrentVideo(v);
+        });
+
+        markers.push(marker);
+      });
+
+      $('#count').textContent = `${list.length} result${list.length === 1 ? '' : 's'}`;
+    }
+
+    // --- Heatmap ---
+    function updateHeatmap(list) {
+      if (!heatOn) {
+        if (heatLayer) {
+          map.removeLayer(heatLayer);
+          heatLayer = null;
+        }
+        return;
+      }
+
+      const points = list
+        .filter(v => typeof v.engagementScore === 'number')
+        .map(v => [v.lat, v.lng, v.engagementScore / 100]);
+
+      if (heatLayer) {
+        map.removeLayer(heatLayer);
+        heatLayer = null;
+      }
+      if (!points.length) return;
+
+      heatLayer = L.heatLayer(points, {
+      radius: 25,
+      blur: 15,
+      gradient: {
+        0.1: "#00bfff",
+        0.3: "#00ff6a",
+        0.5: "#ffff00",
+        0.7: "#ff7f00",
+        1.0: "#ff0000"
+      }
+    }).addTo(map);
+
+    }
+
+    // --- Ranking panel ---
+    // --- Ranking panel ---
+function updateRanking(list) {
+  const rankingList = document.getElementById('rankingList');
+  if (!rankingList) return;
+
+  rankingList.innerHTML = '';
+
+  if (!list.length) {
+    const li = document.createElement('li');
+    li.textContent = 'No videos for current filters.';
+    rankingList.appendChild(li);
+    return;
+  }
+
+  const top = [...list]
+    .filter(v => typeof v.engagementScore === 'number')
+    .sort((a, b) => b.engagementScore - a.engagementScore)
+    .slice(0, 5);
+
+  top.forEach(v => {
+    const li = document.createElement('li');
+
+    // Score → bar color class
+    const cls =
+      v.engagementScore >= 80 ? 'rank-high' :
+      v.engagementScore >= 60 ? 'rank-mid'  :
+      'rank-low';
+
+    // Build the ranking item with the score bar
+    li.innerHTML =
+      `<div>
+         <span class="score">${v.engagementScore}</span>
+         – ${escapeHtml(v.title)}
+         <span class="meta">(${escapeHtml(v.region)} • ${escapeHtml(v.source)})</span>
+       </div>
+
+       <div class="rank-barline ${cls}"
+            style="width:${v.engagementScore}%;"></div>`;
+
+    li.style.cursor = 'pointer';
+
+    li.addEventListener('click', () => {
+      setCurrentVideo(v);
+
+      if (typeof v.lat === 'number' && typeof v.lng === 'number') {
+        map.setView([v.lat, v.lng], Math.max(map.getZoom(), 4));
+      }
+    });
+
+    rankingList.appendChild(li);
+  });
+}
+
+
+    // --- Filters ---
+    function applyFilters() {
+      const q = state.q.trim().toLowerCase();
+      const hasSource    = state.sources.size > 0;
+      const hasTopic     = state.topics.size > 0;
+      const hasRegion    = state.regions.size > 0;
+      const hasLivePhase = !!state.livePhase;
+
+      const filtered = demoVideos.filter(v => {
+        const matchesQ       = !q || v.title.toLowerCase().includes(q);
+        const matchesSource  = !hasSource   || state.sources.has(v.source);
+        const matchesTopic   = !hasTopic    || state.topics.has(v.topic);
+        const matchesRegion  = !hasRegion   || state.regions.has(v.region);
+        const matchesLive    = !hasLivePhase || v.eventPhase === state.livePhase;
+
+        return matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
+      });
+
+      const af = [];
+      if (hasSource)    af.push([...state.sources].join(', '));
+      if (hasTopic)     af.push([...state.topics].join(', '));
+      if (hasRegion)    af.push([...state.regions].join(', '));
+      if (hasLivePhase) af.push(`Live: ${state.livePhase}`);
+
+      $('#activeFilters').textContent = af.length ? af.join(' • ') : 'No filters';
+
+      currentFiltered = filtered;
+      renderMarkers(filtered);
+      updateHeatmap(filtered);
+      updateRanking(filtered);
+    }
+
+    function wireChips(containerId, targetSet) {
+      $$('#' + containerId + ' .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.getAttribute('data-value');
+          if (chip.classList.contains('active')) {
+            chip.classList.remove('active');
+            targetSet.delete(val);
+          } else {
+            chip.classList.add('active');
+            targetSet.add(val);
+          }
+          applyFilters();
+        });
+      });
+    }
+
+    // --- UI wiring ---
+    wireChips('sources', state.sources);
+    wireChips('topics', state.topics);
+    wireChips('regions', state.regions);
+
+    // Live Events chips – single selection
+    const liveChips = $$('#liveEvents .chip');
+    liveChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.getAttribute('data-value');
+
+        if (state.livePhase === val) {
+          state.livePhase = null;
+          chip.classList.remove('active');
+        } else {
+          state.livePhase = val;
+          liveChips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+        }
+
+        applyFilters();
+      });
+    });
+
+    $('#search').addEventListener('input', (e) => {
+      state.q = e.target.value || '';
+      applyFilters();
+    });
+
+    $('#reset').addEventListener('click', () => {
+      state.q = '';
+      $('#search').value = '';
+      state.sources.clear();
+      state.topics.clear();
+      state.regions.clear();
+      state.livePhase = null;
+      $$('.chip.active').forEach(c => c.classList.remove('active'));
+      applyFilters();
+    });
+
+    const panel = $('#filters');
+    const toggle = $('#toggle');
+    let collapsed = false;
+    toggle.addEventListener('click', () => {
+      collapsed = !collapsed;
+      panel.classList.toggle('collapsed', collapsed);
+      toggle.textContent = collapsed ? '▸' : '▾';
+    });
+
+    const heatToggle = document.getElementById('heatToggle');
+    if (heatToggle) {
+      heatToggle.addEventListener('click', () => {
+        heatOn = !heatOn;
+        heatToggle.textContent = heatOn ? 'Heatmap: On' : 'Heatmap: Off';
+        updateHeatmap(currentFiltered);
+      });
+    }
+
+    // --- Make panels draggable ---
+    function makeDraggable(el, handle) {
+      let isDown = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      handle.style.cursor = handle.style.cursor || 'move';
+
+      handle.addEventListener('mousedown', (e) => {
+        const t = e.target;
+        const tag = t.tagName;
+        if (
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          tag === 'BUTTON' ||
+          tag === 'SELECT' ||
+          t.isContentEditable
+        ) {
+          return;
+        }
+
+        e.preventDefault();
+        isDown = true;
+
+        const rect = el.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+      function onMouseMove(e) {
+        if (!isDown) return;
+        el.style.left = (e.clientX - offsetX) + 'px';
+        el.style.top  = (e.clientY - offsetY) + 'px';
+        // If we're dragging the filters panel, keep the ranking panel under it
+        if (el === filtersPanel && rankingPanelEl) {
+          positionRankingUnderFilters();
+        }
+      }
+
+      function onMouseUp() {
+        isDown = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+    }
+
+       const filtersPanel = document.getElementById('filters');
+    const playerPanelEl = document.getElementById('playerPanel');
+    const playerHeaderEl = playerPanelEl.querySelector('.player-header');
+    const rankingPanelEl = document.getElementById('rankingPanel');
+
+    // Position ranking panel just under the filters panel
+    function positionRankingUnderFilters() {
+      if (!filtersPanel || !rankingPanelEl) return;
+      const rect = filtersPanel.getBoundingClientRect();
+      rankingPanelEl.style.left = rect.left + 'px';
+      rankingPanelEl.style.top  = (rect.bottom + 12) + 'px'; // 12px gap under filters
+    }
+
+    makeDraggable(filtersPanel, filtersPanel);
+    makeDraggable(playerPanelEl, playerHeaderEl);
+
+    // Initial position when page loads
+    positionRankingUnderFilters();
+
+
+    // --- Load videos from external JSON and then render ---
+    fetch('videos.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load videos.json: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        demoVideos = data.map(v => {
+          if (typeof v.engagementScore === 'number') return v;
+          const digits = String(v.id || '')
+            .split('')
+            .filter(ch => ch >= '0' && ch <= '9')
+            .join('');
+          const base = digits ? parseInt(digits, 10) : Math.floor(Math.random() * 1000);
+          const score = 40 + (base * 13) % 60; // 40–99
+          return { ...v, engagementScore: score };
+        });
+
+        applyFilters();
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
