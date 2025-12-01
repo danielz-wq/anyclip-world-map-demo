@@ -251,7 +251,7 @@
     "country": "GB",
     "region": "Europe",
     "lat": 40.7128,
-    "lng": -74.0060
+    "lng": -74.0060,
     "videoId": "VaeOaXHfc3M",
     "eventPhase": "current"
   },
@@ -263,7 +263,7 @@
     "country": "GB",
     "region": "Europe",
     "lat": 35.6762,
-    "lng": 139.6503
+    "lng": 139.6503,
     "videoId": "VaeOaXHfc3M",
     "eventPhase": "current"
   },
