@@ -461,6 +461,100 @@ body {
   top: 72px;
 }
 
+    /* === Recommendations Panel === */
+.recommendations-panel {
+  position: fixed;
+  right: 16px;
+  top: 260px;
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid #243244;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  overflow: hidden;
+  display: none;
+}
+
+.recommendations-panel.visible {
+  display: block;
+}
+
+.recommendations-header {
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ecfdf5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recommendations-list {
+  padding: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.rec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text);
+  margin-bottom: 6px;
+  background: #0e141c;
+  border: 1px solid #1e293b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rec-item:hover {
+  background: #1e293b;
+  transform: translateX(2px);
+}
+
+.rec-item:last-child {
+  margin-bottom: 0;
+}
+
+.rec-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.rec-content {
+  flex: 1;
+}
+
+.rec-title {
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.rec-desc {
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.rec-tag {
+  display: inline-block;
+  background: #064e3b;
+  color: #6ee7b7;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+    
 /* === Publisher Dropdown === */
 .publisher-dropdown {
   position: relative;
@@ -552,6 +646,16 @@ body {
     </div>
   </div>
 
+  <!-- Recommendations Panel (visible in Publisher Dashboard mode) -->
+  <div class="recommendations-panel" id="recommendationsPanel">
+    <div class="recommendations-header">
+      💡 Recommendations
+    </div>
+    <div class="recommendations-list" id="recommendationsList">
+      <!-- Will be populated by JS -->
+    </div>
+  </div>
+  
   <!-- Alerts Panel -->
   <div class="alerts-panel" id="alertsPanel">
     <div class="alerts-header">
@@ -1180,6 +1284,7 @@ function updateRanking(list) {
        applyFilters();
         updateControlStats();
         generateAlerts();
+        generateRecommendations();
       })
       .catch(err => {
         console.error(err);
@@ -1205,6 +1310,7 @@ function updateRanking(list) {
       applyFilters();
       updateControlStats();
       generateAlerts();
+      generateRecommendations();
     });
 
     // === Control Room Stats ===
@@ -1298,6 +1404,120 @@ function updateRanking(list) {
       `).join('');
     }
 
+    // === Recommendations Generation ===
+    function generateRecommendations() {
+      const panel = document.getElementById('recommendationsPanel');
+      const list = document.getElementById('recommendationsList');
+      
+      // Only show in publisher dashboard mode
+      if (!selectedPublisher) {
+        panel.classList.remove('visible');
+        return;
+      }
+      
+      panel.classList.add('visible');
+      
+      // Get publisher's videos
+      const publisherVideos = demoVideos.filter(v => v.source === selectedPublisher);
+      
+      if (publisherVideos.length === 0) {
+        list.innerHTML = '<div class="rec-item"><span class="rec-desc">No data available</span></div>';
+        return;
+      }
+      
+      // Find insights
+      const topVideo = [...publisherVideos].sort((a, b) => b.engagementScore - a.engagementScore)[0];
+      const avgScore = Math.round(publisherVideos.reduce((s, v) => s + (v.engagementScore || 0), 0) / publisherVideos.length);
+      const globalAvg = Math.round(demoVideos.reduce((s, v) => s + (v.engagementScore || 0), 0) / demoVideos.length);
+      const diff = avgScore - globalAvg;
+      
+      // Get topics breakdown
+      const topicCounts = {};
+      publisherVideos.forEach(v => {
+        topicCounts[v.topic] = (topicCounts[v.topic] || 0) + 1;
+      });
+      const topTopic = Object.entries(topicCounts).sort((a, b) => b[1] - a[1])[0];
+      
+      // Get regions breakdown
+      const regionCounts = {};
+      publisherVideos.forEach(v => {
+        regionCounts[v.region] = (regionCounts[v.region] || 0) + 1;
+      });
+      const topRegion = Object.entries(regionCounts).sort((a, b) => b[1] - a[1])[0];
+      
+      const recommendations = [];
+      
+      // Top video recommendation
+      if (topVideo && topVideo.engagementScore >= 80) {
+        recommendations.push({
+          icon: '🚀',
+          title: 'Promote Top Performer',
+          desc: `"${topVideo.title}" has ${topVideo.engagementScore}/100 engagement. Feature it on your homepage.`,
+          tag: 'High Impact'
+        });
+      }
+      
+      // Benchmark comparison
+      if (diff > 0) {
+        recommendations.push({
+          icon: '📈',
+          title: 'Above Market Average',
+          desc: `Your engagement is ${diff}% higher than the global average. Keep it up!`,
+          tag: 'Insight'
+        });
+      } else if (diff < -5) {
+        recommendations.push({
+          icon: '⚡',
+          title: 'Room for Improvement',
+          desc: `Your engagement is ${Math.abs(diff)}% below average. Consider refreshing content strategy.`,
+          tag: 'Action Needed'
+        });
+      }
+      
+      // Topic recommendation
+      if (topTopic) {
+        recommendations.push({
+          icon: '🎯',
+          title: `Double Down on ${topTopic[0]}`,
+          desc: `${topTopic[0]} is your strongest category with ${topTopic[1]} videos. Produce more content here.`,
+          tag: 'Content Strategy'
+        });
+      }
+      
+      // Region insight
+      if (topRegion) {
+        recommendations.push({
+          icon: '🌍',
+          title: `Strong in ${topRegion[0]}`,
+          desc: `Most of your traffic comes from ${topRegion[0]}. Consider localized content.`,
+          tag: 'Geo Insight'
+        });
+      }
+      
+      // Live events suggestion
+      const liveCount = publisherVideos.filter(v => v.eventPhase === 'current').length;
+      if (liveCount === 0) {
+        recommendations.push({
+          icon: '🔴',
+          title: 'Try Live Events',
+          desc: 'You have no live events. Live content typically gets 40% higher engagement.',
+          tag: 'Growth Opportunity'
+        });
+      }
+      
+      // Render recommendations
+      list.innerHTML = recommendations.map(r => `
+        <div class="rec-item">
+          <span class="rec-icon">${r.icon}</span>
+          <div class="rec-content">
+            <div class="rec-title">${r.title}</div>
+            <div class="rec-desc">${r.desc}</div>
+            <span class="rec-tag">${r.tag}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+    
     // Update stats periodically (simulate real-time)
     setInterval(() => {
       if (demoVideos.length > 0) {
