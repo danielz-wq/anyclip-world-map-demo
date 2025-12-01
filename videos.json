@@ -233,7 +233,7 @@
   },
   {
     "id": "E2",
-    "title": "AnyClip Live Product Demo – Streaming Now",
+    "title": "AnyClip Live Product Demo2 – Streaming Now",
     "source": "ANYCLIP",
     "topic": "Live Event",
     "country": "GB",
@@ -245,12 +245,48 @@
   },
   {
     "id": "E3",
+    "title": "AnyClip Live Product Demo3 – Streaming Now",
+    "source": "ANYCLIP",
+    "topic": "Live Event",
+    "country": "GB",
+    "region": "Europe",
+    "lat": 52.5072,
+    "lng": -0.1276,
+    "videoId": "VaeOaXHfc3M",
+    "eventPhase": "current"
+  },
+  {
+    "id": "E4",
+    "title": "AnyClip Live Product Demo4 – Streaming Now",
+    "source": "ANYCLIP",
+    "topic": "Live Event",
+    "country": "GB",
+    "region": "Europe",
+    "lat": 53.5072,
+    "lng": -0.1276,
+    "videoId": "VaeOaXHfc3M",
+    "eventPhase": "current"
+  },
+  {
+    "id": "E5",
     "title": "AnyClip Future Launch – Coming Soon",
     "source": "ANYCLIP",
     "topic": "Live Event",
     "country": "IL",
     "region": "Middle East",
     "lat": 32.0853,
+    "lng": 34.7818,
+    "videoId": null,
+    "eventPhase": "future"
+  },
+   {
+    "id": "E6",
+    "title": "AnyClip Future Launch – Coming Soon",
+    "source": "ANYCLIP",
+    "topic": "Live Event",
+    "country": "IL",
+    "region": "Middle East",
+    "lat": 33.0853,
     "lng": 34.7818,
     "videoId": null,
     "eventPhase": "future"
