@@ -324,11 +324,181 @@
 .rank-mid   { background:#facc15 !important; }  /* yellow */
 .rank-low   { background:#22c55e !important; }  /* green */
 
+/* === Control Room Header === */
+.control-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-bottom: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 1100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.control-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-logo span {
+  color: #38bdf8;
+}
+
+.control-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat-box {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.stat-value.live {
+  color: #4ade80;
+  animation: pulse-text 2s infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* === Alerts Panel === */
+.alerts-panel {
+  position: fixed;
+  top: 72px;
+  right: 16px;
+  width: 280px;
+  background: var(--panel);
+  border: 1px solid #243244;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.alerts-header {
+  background: #0f151f;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid #223246;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alerts-list {
+  padding: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--text);
+  margin-bottom: 6px;
+  background: #0e141c;
+  border: 1px solid #1e293b;
+}
+
+.alert-item:last-child {
+  margin-bottom: 0;
+}
+
+.alert-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.alert-item.warning { border-left: 3px solid #f59e0b; }
+.alert-item.success { border-left: 3px solid #22c55e; }
+.alert-item.info { border-left: 3px solid #3b82f6; }
+.alert-item.fire { border-left: 3px solid #ef4444; }
+
+/* Adjust body for header */
+body {
+  padding-top: 56px;
+}
+
+/* Adjust map position */
+#map {
+  margin-top: 16px;
+}
+
+/* Adjust filters panel position */
+.filters {
+  top: 72px;
+}
 
     
   </style>
 </head>
 <body>
+  <!-- Control Room Header -->
+  <div class="control-header">
+    <div class="control-logo">
+      🎛️ <span>AnyClip</span> Control Room
+    </div>
+    <div class="control-stats">
+      <div class="stat-box">
+        <div class="stat-value" id="statPlayers">—</div>
+        <div class="stat-label">Active Players</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="statViews">—</div>
+        <div class="stat-label">Views (24h)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="statEngagement">—</div>
+        <div class="stat-label">Avg Engagement</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value live" id="statLive">—</div>
+        <div class="stat-label">Live Now</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts Panel -->
+  <div class="alerts-panel" id="alertsPanel">
+    <div class="alerts-header">
+      🔔 System Alerts
+    </div>
+    <div class="alerts-list" id="alertsList">
+      <!-- Alerts will be injected here -->
+    </div>
+  </div>
+
   <div id="map"></div>
 
   <!-- Bottom Display Banners -->
@@ -915,11 +1085,92 @@ function updateRanking(list) {
           return { ...v, engagementScore: score };
         });
 
-        applyFilters();
+       applyFilters();
+        updateControlStats();
+        generateAlerts();
       })
       .catch(err => {
         console.error(err);
       });
+
+    // === Control Room Stats ===
+    function updateControlStats() {
+      const total = demoVideos.length;
+      const liveCount = demoVideos.filter(v => v.eventPhase === 'current').length;
+      const avgEngagement = Math.round(
+        demoVideos.reduce((sum, v) => sum + (v.engagementScore || 0), 0) / total
+      );
+      
+      // Simulated 24h views (random but consistent)
+      const viewsBase = total * 4200;
+      const views = (viewsBase + Math.floor(Math.random() * 100000)).toLocaleString();
+
+      document.getElementById('statPlayers').textContent = total.toLocaleString();
+      document.getElementById('statViews').textContent = views;
+      document.getElementById('statEngagement').textContent = avgEngagement + '%';
+      document.getElementById('statLive').textContent = liveCount;
+    }
+
+    // === Alerts Generation ===
+    function generateAlerts() {
+      const alertsList = document.getElementById('alertsList');
+      
+      // Find interesting data points for alerts
+      const hotVideos = demoVideos.filter(v => v.engagementScore >= 90);
+      const liveNow = demoVideos.filter(v => v.eventPhase === 'current');
+      const regions = [...new Set(demoVideos.map(v => v.region))];
+      
+      const alerts = [];
+
+      // High engagement alert
+      if (hotVideos.length > 0) {
+        alerts.push({
+          type: 'fire',
+          icon: '🔥',
+          text: `${hotVideos.length} videos with 90+ engagement score`
+        });
+      }
+
+      // Live events alert
+      if (liveNow.length > 0) {
+        alerts.push({
+          type: 'success',
+          icon: '🟢',
+          text: `${liveNow.length} live event${liveNow.length > 1 ? 's' : ''} streaming now`
+        });
+      }
+
+      // All systems healthy
+      alerts.push({
+        type: 'success',
+        icon: '✅',
+        text: `All ${regions.length} regions reporting normally`
+      });
+
+      // Random spike alert
+      const randomTopic = ['Sports', 'News', 'Tech'][Math.floor(Math.random() * 3)];
+      const spikePercent = 180 + Math.floor(Math.random() * 200);
+      alerts.push({
+        type: 'warning',
+        icon: '⚡',
+        text: `Unusual spike in ${randomTopic}: +${spikePercent}%`
+      });
+
+      // Render alerts
+      alertsList.innerHTML = alerts.map(a => `
+        <div class="alert-item ${a.type}">
+          <span class="alert-icon">${a.icon}</span>
+          <span>${a.text}</span>
+        </div>
+      `).join('');
+    }
+
+    // Update stats periodically (simulate real-time)
+    setInterval(() => {
+      if (demoVideos.length > 0) {
+        updateControlStats();
+      }
+    }, 30000);
   </script>
 </body>
 </html>
