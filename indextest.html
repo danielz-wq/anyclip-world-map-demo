@@ -456,19 +456,82 @@ body {
 }
 
 /* Adjust filters panel position */
+/* Adjust filters panel position */
 .filters {
   top: 72px;
+}
+
+/* === Publisher Dropdown === */
+.publisher-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.publisher-dropdown label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.publisher-select {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+  padding: 8px 32px 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  min-width: 160px;
+}
+
+.publisher-select:hover {
+  border-color: #475569;
+}
+
+.publisher-select:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+/* Dashboard mode indicator */
+.dashboard-mode {
+  background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  font-size: 14px;
+  margin-left: 8px;
 }
 
     
   </style>
 </head>
 <body>
-  <!-- Control Room Header -->
+ <!-- Control Room Header -->
   <div class="control-header">
     <div class="control-logo">
-      🎛️ <span>AnyClip</span> Control Room
+      🎛️ <span>AnyClip</span> <span id="viewModeTitle">Control Room</span>
     </div>
+    
+    <div class="publisher-dropdown">
+      <label for="publisherSelect">Viewing as:</label>
+      <select id="publisherSelect" class="publisher-select">
+        <option value="">All Publishers</option>
+        <option value="BBC">BBC</option>
+        <option value="CNN">CNN</option>
+        <option value="YNET">YNET</option>
+        <option value="REUTERS">Reuters</option>
+      </select>
+    </div>
+
     <div class="control-stats">
       <div class="stat-box">
         <div class="stat-value" id="statPlayers">—</div>
@@ -914,7 +977,7 @@ function updateRanking(list) {
 
 
     // --- Filters ---
-    function applyFilters() {
+   function applyFilters() {
       const q = state.q.trim().toLowerCase();
       const hasSource    = state.sources.size > 0;
       const hasTopic     = state.topics.size > 0;
@@ -922,13 +985,16 @@ function updateRanking(list) {
       const hasLivePhase = !!state.livePhase;
 
       const filtered = demoVideos.filter(v => {
+        // Publisher view filter (from dropdown)
+        const matchesPublisherView = !selectedPublisher || v.source === selectedPublisher;
+        
         const matchesQ       = !q || v.title.toLowerCase().includes(q);
         const matchesSource  = !hasSource   || state.sources.has(v.source);
         const matchesTopic   = !hasTopic    || state.topics.has(v.topic);
         const matchesRegion  = !hasRegion   || state.regions.has(v.region);
         const matchesLive    = !hasLivePhase || v.eventPhase === state.livePhase;
 
-        return matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
+        return matchesPublisherView && matchesQ && matchesSource && matchesTopic && matchesRegion && matchesLive;
       });
 
       const af = [];
@@ -1120,11 +1186,46 @@ function updateRanking(list) {
       });
 
     // === Control Room Stats ===
+   // === Publisher View State ===
+    let selectedPublisher = '';
+
+    // === Publisher Dropdown Handler ===
+    document.getElementById('publisherSelect').addEventListener('change', function(e) {
+      selectedPublisher = e.target.value;
+      
+      // Update title
+      const titleEl = document.getElementById('viewModeTitle');
+      if (selectedPublisher) {
+        titleEl.innerHTML = `<span class="dashboard-mode">${selectedPublisher} Dashboard</span>`;
+      } else {
+        titleEl.textContent = 'Control Room';
+      }
+      
+      // Re-apply everything
+      applyFilters();
+      updateControlStats();
+      generateAlerts();
+    });
+
+    // === Control Room Stats ===
     function updateControlStats() {
-      const total = demoVideos.length;
-      const liveCount = demoVideos.filter(v => v.eventPhase === 'current').length;
+      // Filter by selected publisher if set
+      const dataSet = selectedPublisher 
+        ? demoVideos.filter(v => v.source === selectedPublisher)
+        : demoVideos;
+      
+      const total = dataSet.length;
+      if (total === 0) {
+        document.getElementById('statPlayers').textContent = '0';
+        document.getElementById('statViews').textContent = '0';
+        document.getElementById('statEngagement').textContent = '0%';
+        document.getElementById('statLive').textContent = '0';
+        return;
+      }
+      
+      const liveCount = dataSet.filter(v => v.eventPhase === 'current').length;
       const avgEngagement = Math.round(
-        demoVideos.reduce((sum, v) => sum + (v.engagementScore || 0), 0) / total
+        dataSet.reduce((sum, v) => sum + (v.engagementScore || 0), 0) / total
       );
       
       // Simulated 24h views (random but consistent)
@@ -1138,13 +1239,19 @@ function updateRanking(list) {
     }
 
     // === Alerts Generation ===
+    // === Alerts Generation ===
     function generateAlerts() {
       const alertsList = document.getElementById('alertsList');
       
+      // Filter by selected publisher if set
+      const dataSet = selectedPublisher 
+        ? demoVideos.filter(v => v.source === selectedPublisher)
+        : demoVideos;
+      
       // Find interesting data points for alerts
-      const hotVideos = demoVideos.filter(v => v.engagementScore >= 90);
-      const liveNow = demoVideos.filter(v => v.eventPhase === 'current');
-      const regions = [...new Set(demoVideos.map(v => v.region))];
+      const hotVideos = dataSet.filter(v => v.engagementScore >= 90);
+      const liveNow = dataSet.filter(v => v.eventPhase === 'current');
+      const regions = [...new Set(dataSet.map(v => v.region))];
       
       const alerts = [];
 
