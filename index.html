@@ -308,6 +308,22 @@
         width: auto;
       }
     }
+
+  /* horizontal score bar */
+.rank-barline {
+  height: 4px;
+  border-radius: 4px;
+  margin-top: 3px;
+  margin-bottom: 4px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.rank-high  { background:#ef4444 !important; }  /* red */
+.rank-mid   { background:#facc15 !important; }  /* yellow */
+.rank-low   { background:#22c55e !important; }  /* green */
+
+
+    
   </style>
 </head>
 <body>
@@ -631,51 +647,73 @@
       if (!points.length) return;
 
       heatLayer = L.heatLayer(points, {
-        radius: 25,
-        blur: 18,
-        maxZoom: 7
-      }).addTo(map);
+      radius: 25,
+      blur: 15,
+      gradient: {
+        0.1: "#00bfff",
+        0.3: "#00ff6a",
+        0.5: "#ffff00",
+        0.7: "#ff7f00",
+        1.0: "#ff0000"
+      }
+    }).addTo(map);
+
     }
 
     // --- Ranking panel ---
-    function updateRanking(list) {
-      const rankingList = document.getElementById('rankingList');
-      if (!rankingList) return;
+    // --- Ranking panel ---
+function updateRanking(list) {
+  const rankingList = document.getElementById('rankingList');
+  if (!rankingList) return;
 
-      rankingList.innerHTML = '';
+  rankingList.innerHTML = '';
 
-      if (!list.length) {
-        const li = document.createElement('li');
-        li.textContent = 'No videos for current filters.';
-        rankingList.appendChild(li);
-        return;
+  if (!list.length) {
+    const li = document.createElement('li');
+    li.textContent = 'No videos for current filters.';
+    rankingList.appendChild(li);
+    return;
+  }
+
+  const top = [...list]
+    .filter(v => typeof v.engagementScore === 'number')
+    .sort((a, b) => b.engagementScore - a.engagementScore)
+    .slice(0, 5);
+
+  top.forEach(v => {
+    const li = document.createElement('li');
+
+    // Score → bar color class
+    const cls =
+      v.engagementScore >= 80 ? 'rank-high' :
+      v.engagementScore >= 60 ? 'rank-mid'  :
+      'rank-low';
+
+    // Build the ranking item with the score bar
+    li.innerHTML =
+      `<div>
+         <span class="score">${v.engagementScore}</span>
+         – ${escapeHtml(v.title)}
+         <span class="meta">(${escapeHtml(v.region)} • ${escapeHtml(v.source)})</span>
+       </div>
+
+       <div class="rank-barline ${cls}"
+            style="width:${v.engagementScore}%;"></div>`;
+
+    li.style.cursor = 'pointer';
+
+    li.addEventListener('click', () => {
+      setCurrentVideo(v);
+
+      if (typeof v.lat === 'number' && typeof v.lng === 'number') {
+        map.setView([v.lat, v.lng], Math.max(map.getZoom(), 4));
       }
+    });
 
-      const top = [...list]
-        .filter(v => typeof v.engagementScore === 'number')
-        .sort((a, b) => b.engagementScore - a.engagementScore)
-        .slice(0, 5);
+    rankingList.appendChild(li);
+  });
+}
 
-      top.forEach(v => {
-        const li = document.createElement('li');
-        li.innerHTML =
-          `<span class="score">${v.engagementScore}</span>` +
-          ` – ${escapeHtml(v.title)} ` +
-          `<span class="meta">(${escapeHtml(v.region)} • ${escapeHtml(v.source)})</span>`;
-
-        li.style.cursor = 'pointer';
-
-        li.addEventListener('click', () => {
-          setCurrentVideo(v);
-
-          if (typeof v.lat === 'number' && typeof v.lng === 'number') {
-            map.setView([v.lat, v.lng], Math.max(map.getZoom(), 4));
-          }
-        });
-
-        rankingList.appendChild(li);
-      });
-    }
 
     // --- Filters ---
     function applyFilters() {
